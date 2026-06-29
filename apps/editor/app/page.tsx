@@ -1,7 +1,7 @@
 'use client'
 
 import { Editor, ItemsPanel } from '@pascal-app/editor'
-import { Hammer, Layers, Package, Settings } from 'lucide-react'
+import { Hammer, Layers, LogOut, Package, Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { BuildTab } from '@/components/build-tab'
@@ -108,6 +108,17 @@ export default function Home() {
       <Editor
         layoutVersion="v2"
         projectId={PROJECT_ID}
+        sidebarHeader={
+          <button
+            aria-label="退出"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground transition-all duration-200 hover:bg-accent/50 hover:text-foreground"
+            onClick={() => window.history.back()}
+            title="退出"
+            type="button"
+          >
+            <LogOut className="h-5 w-5" />
+          </button>
+        }
         sidebarTabs={SIDEBAR_TABS}
         viewerToolbarLeft={<CommunityViewerToolbarLeft />}
         viewerToolbarRight={<CommunityViewerToolbarRight />}

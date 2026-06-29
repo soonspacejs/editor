@@ -57,17 +57,28 @@ interface IconRailProps {
   collapsed: boolean
   /** Clicking a rail icon: switch tab, or toggle the panel (see layout). */
   onIconClick: (id: string) => void
+  /** Optional content rendered at the TOP of the rail, before the tab icons
+   *  (e.g. an exit button as the first item). */
+  header?: ReactNode
 }
 
 /**
  * Vertical icon rail for the v2 left column. Always visible (even when the
  * panel is collapsed) so the user can reopen the panel by clicking an icon.
- * The label renders as a hover tooltip on the right.
+ * The label renders as a hover tooltip on the right. An optional `header` is
+ * rendered as the first item at the top of the rail.
  */
-export function IconRail({ tabs, activeTab, collapsed, onIconClick }: IconRailProps) {
+export function IconRail({ tabs, activeTab, collapsed, onIconClick, header }: IconRailProps) {
   return (
     <TooltipProvider delayDuration={0} disableHoverableContent>
       <div className="flex h-full w-14 shrink-0 flex-col items-center gap-1 border-border/50 border-r py-2">
+        {header ? (
+          <>
+            <div className="flex flex-col items-center gap-1">{header}</div>
+            {/* Divider separating the header action(s) from the nav tabs below. */}
+            <div className="my-1 h-px w-8 bg-border/50" />
+          </>
+        ) : null}
         {tabs.map((tab) => {
           // Only show the active highlight while the panel is open. When
           // collapsed nothing is "open", so every icon reads as unselected.

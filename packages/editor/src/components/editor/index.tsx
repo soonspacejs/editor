@@ -135,6 +135,8 @@ export interface EditorProps {
   sidebarTabs?: (SidebarTab & { component: React.ComponentType })[]
   viewerToolbarLeft?: ReactNode
   viewerToolbarRight?: ReactNode
+  /** Rendered at the top of the left icon rail (v2), before the tabs, e.g. an exit button. */
+  sidebarHeader?: ReactNode
   /**
    * Docked below the node inspector (v2). Hosts mount the "save as preset"
    * affordance here so it reads as part of the inspector surface and shows
@@ -1074,6 +1076,7 @@ export default function Editor({
   sidebarTabs,
   viewerToolbarLeft,
   viewerToolbarRight,
+  sidebarHeader,
   inspectorFooter,
   projectId,
   onLoad,
@@ -1361,6 +1364,7 @@ export default function Editor({
                 </>
               }
               renderTabContent={renderTabContent}
+              sidebarHeader={sidebarHeader}
               sidebarOverlay={sidebarOverlay}
               sidebarTabs={tabBarTabs}
               viewerContent={viewerCanvas}
