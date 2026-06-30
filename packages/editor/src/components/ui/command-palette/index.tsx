@@ -7,6 +7,7 @@ import { Command, useCommandState } from 'cmdk'
 import { ChevronRight, Search } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { create } from 'zustand'
 import { useShallow } from 'zustand/shallow'
 import { Dialog, DialogContent, DialogTitle } from './../../../components/ui/primitives/dialog'
@@ -189,6 +190,7 @@ function EmptyActionItem({ action }: { action: CommandPaletteEmptyAction }) {
 // Main component
 // ---------------------------------------------------------------------------
 export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEmptyAction }) {
+  const { t } = useTranslation()
   const { open, setOpen, mode, setMode, pages, inputValue, setInputValue, navigateTo, goBack } =
     useCommandPalette()
 
@@ -293,7 +295,7 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogContent className="max-w-lg gap-0 overflow-hidden p-0" showCloseButton={false}>
-        <DialogTitle className="sr-only">Command Palette</DialogTitle>
+        <DialogTitle className="sr-only">{t('Command Palette')}</DialogTitle>
 
         {modeView && <modeView.Component onBack={onBack} onClose={onClose} />}
 
@@ -317,7 +319,7 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
                   onClick={goBack}
                   type="button"
                 >
-                  {PAGE_LABEL[page] ?? views.get(page)?.label ?? page}
+                  {t(PAGE_LABEL[page] ?? views.get(page)?.label ?? page)}
                 </button>
               )}
               <Command.Input
@@ -326,10 +328,10 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
                 onValueChange={setInputValue}
                 placeholder={
                   page === 'rename-level'
-                    ? 'Type a new name…'
+                    ? t('Type a new name…')
                     : page
-                      ? 'Filter options…'
-                      : 'Search actions…'
+                      ? t('Filter options…')
+                      : t('Search actions…')
                 }
                 value={inputValue}
               />
@@ -338,7 +340,7 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
             <Command.List className="max-h-100 overflow-y-auto p-1.5">
               {(!emptyAction || page) && (
                 <Command.Empty className="py-8 text-center text-muted-foreground text-sm">
-                  No commands found.
+                  {t('No commands found.')}
                 </Command.Empty>
               )}
               {emptyAction && !page && <EmptyActionItem action={emptyAction} />}
@@ -373,12 +375,12 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
 
               {/* ── Wall Mode sub-page ────────────────────────────────────── */}
               {page === 'wall-mode' && (
-                <Command.Group heading="Wall Mode">
+                <Command.Group heading={t('Wall Mode')}>
                   {(['cutaway', 'up', 'down', 'translucent'] as const).map((mode) => (
                     <OptionItem
                       isActive={wallMode === mode}
                       key={mode}
-                      label={wallModeLabel[mode]}
+                      label={t(wallModeLabel[mode])}
                       onSelect={() => run(() => setWallMode(mode))}
                     />
                   ))}
@@ -387,12 +389,12 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
 
               {/* ── Level Mode sub-page ───────────────────────────────────── */}
               {page === 'level-mode' && (
-                <Command.Group heading="Level Mode">
+                <Command.Group heading={t('Level Mode')}>
                   {(['stacked', 'exploded', 'solo'] as const).map((mode) => (
                     <OptionItem
                       isActive={levelMode === mode}
                       key={mode}
-                      label={levelModeLabel[mode]}
+                      label={t(levelModeLabel[mode])}
                       onSelect={() => run(() => setLevelMode(mode))}
                     />
                   ))}
@@ -401,7 +403,7 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
 
               {/* ── Go to Level sub-page ──────────────────────────────────── */}
               {page === 'goto-level' && (
-                <Command.Group heading="Go to Level">
+                <Command.Group heading={t('Go to Level')}>
                   {allLevels.map((level) => (
                     <OptionItem
                       isActive={level.id === activeLevelId}
@@ -417,7 +419,7 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
 
               {/* ── Rename Level sub-page ─────────────────────────────────── */}
               {page === 'rename-level' && (
-                <Command.Group heading="Rename Level">
+                <Command.Group heading={t('Rename Level')}>
                   <Command.Item
                     className="flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-foreground text-sm transition-colors data-[disabled=true]:cursor-not-allowed data-[selected=true]:bg-accent data-[disabled=true]:opacity-40"
                     disabled={!inputValue.trim()}
@@ -443,10 +445,10 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
                     <span className="flex-1 truncate">
                       {inputValue.trim() ? (
                         <>
-                          Rename to <span className="font-medium">"{inputValue.trim()}"</span>
+                          {t('Rename to')} <span className="font-medium">"{inputValue.trim()}"</span>
                         </>
                       ) : (
-                        <span className="text-muted-foreground">Type a new name above…</span>
+                        <span className="text-muted-foreground">{t('Type a new name above…')}</span>
                       )}
                     </span>
                   </Command.Item>
@@ -457,18 +459,18 @@ export function CommandPalette({ emptyAction }: { emptyAction?: CommandPaletteEm
             {/* Footer hint */}
             <div className="flex items-center justify-between border-border/50 border-t px-3 py-2">
               <span className="text-[11px] text-muted-foreground">
-                <Shortcut keys={['↑', '↓']} /> navigate
+                <Shortcut keys={['↑', '↓']} /> {t('navigate')}
               </span>
               <span className="text-[11px] text-muted-foreground">
-                <Shortcut keys={['↵']} /> select
+                <Shortcut keys={['↵']} /> {t('select')}
               </span>
               {page ? (
                 <span className="text-[11px] text-muted-foreground">
-                  <Shortcut keys={['⌫']} /> back
+                  <Shortcut keys={['⌫']} /> {t('back')}
                 </span>
               ) : (
                 <span className="text-[11px] text-muted-foreground">
-                  <Shortcut keys={['Esc']} /> close
+                  <Shortcut keys={['Esc']} /> {t('close')}
                 </span>
               )}
             </div>

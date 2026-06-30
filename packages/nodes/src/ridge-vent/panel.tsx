@@ -20,6 +20,7 @@ import {
 import { useViewer } from '@pascal-app/viewer'
 import { Copy, Move, Trash2 } from 'lucide-react'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { RidgeVentNode } from './schema'
 
 /**
@@ -28,6 +29,7 @@ import type { RidgeVentNode } from './schema'
  * Delete actions that route through the kind-owned ghost-drag flow.
  */
 export default function RidgeVentPanel() {
+  const { t } = useTranslation()
   const selectedId = useViewer((s) => s.selection.selectedIds[0])
   const setSelection = useViewer((s) => s.setSelection)
   const updateNode = useScene((s) => s.updateNode)
@@ -131,32 +133,32 @@ export default function RidgeVentPanel() {
       icon="/icons/roof.webp"
       onBack={node.roofSegmentId ? handleBack : undefined}
       onClose={handleClose}
-      title={node.name || 'Ridge Vent'}
+      title={node.name || t('Ridge Vent')}
       width={300}
     >
-      <PanelSection title="Style">
+      <PanelSection title={t('Style')}>
         <SegmentedControl
           onChange={(v) => handleUpdate({ style: v as RidgeVentNode['style'] })}
           options={[
-            { label: 'Standard', value: 'standard' },
-            { label: 'Shingled', value: 'shingled' },
-            { label: 'Flanged', value: 'metal' },
+            { label: t('Standard'), value: 'standard' },
+            { label: t('Shingled'), value: 'shingled' },
+            { label: t('Flanged'), value: 'metal' },
           ]}
           value={node.style ?? 'standard'}
         />
         <SegmentedControl
           onChange={(v) => handleUpdate({ endCaps: v === 'yes' })}
           options={[
-            { label: 'End Caps', value: 'yes' },
-            { label: 'Open', value: 'no' },
+            { label: t('End Caps'), value: 'yes' },
+            { label: t('Open'), value: 'no' },
           ]}
           value={(node.endCaps ?? true) ? 'yes' : 'no'}
         />
       </PanelSection>
 
-      <PanelSection title="Dimensions">
+      <PanelSection title={t('Dimensions')}>
         <SliderControl
-          label="Length"
+          label={t('Length')}
           max={8}
           min={0.5}
           onChange={(v) => handleUpdate({ length: v })}
@@ -168,7 +170,7 @@ export default function RidgeVentPanel() {
           value={Math.round(node.length * 100) / 100}
         />
         <SliderControl
-          label="Width"
+          label={t('Width')}
           max={0.6}
           min={0.1}
           onChange={(v) => handleUpdate({ width: v })}
@@ -180,7 +182,7 @@ export default function RidgeVentPanel() {
           value={Math.round(node.width * 100) / 100}
         />
         <SliderControl
-          label="Height"
+          label={t('Height')}
           max={0.2}
           min={0.03}
           onChange={(v) => handleUpdate({ height: v })}
@@ -193,9 +195,9 @@ export default function RidgeVentPanel() {
         />
       </PanelSection>
 
-      <PanelSection title="Position">
+      <PanelSection title={t('Position')}>
         <SliderControl
-          label="X"
+          label={t('X')}
           max={halfW}
           min={-halfW}
           onChange={(v) =>
@@ -215,7 +217,7 @@ export default function RidgeVentPanel() {
           value={Math.round((node.position[0] ?? 0) * 100) / 100}
         />
         <SliderControl
-          label="Y"
+          label={t('Y')}
           max={2}
           min={-2}
           onChange={(v) =>
@@ -235,7 +237,7 @@ export default function RidgeVentPanel() {
           value={Math.round((node.position[1] ?? 0) * 100) / 100}
         />
         <SliderControl
-          label="Z"
+          label={t('Z')}
           max={halfD}
           min={-halfD}
           onChange={(v) =>
@@ -255,7 +257,7 @@ export default function RidgeVentPanel() {
           value={Math.round((node.position[2] ?? 0) * 100) / 100}
         />
         <SliderControl
-          label="Rotation"
+          label={t('Rotation')}
           max={180}
           min={-180}
           onChange={(deg) => handleUpdate({ rotation: (deg * Math.PI) / 180 })}
@@ -268,18 +270,18 @@ export default function RidgeVentPanel() {
         />
       </PanelSection>
 
-      <PanelSection title="Actions">
+      <PanelSection title={t('Actions')}>
         <ActionGroup>
-          <ActionButton icon={<Move className="h-3.5 w-3.5" />} label="Move" onClick={handleMove} />
+          <ActionButton icon={<Move className="h-3.5 w-3.5" />} label={t('Move')} onClick={handleMove} />
           <ActionButton
             icon={<Copy className="h-3.5 w-3.5" />}
-            label="Duplicate"
+            label={t('Duplicate')}
             onClick={handleDuplicate}
           />
           <ActionButton
             className="hover:bg-red-500/20"
             icon={<Trash2 className="h-3.5 w-3.5 text-red-400" />}
-            label="Delete"
+            label={t('Delete')}
             onClick={handleDelete}
           />
         </ActionGroup>

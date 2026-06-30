@@ -29,6 +29,7 @@ import { useViewer } from '@pascal-app/viewer'
 import { KeyboardControls } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box3,
   BoxGeometry,
@@ -1408,6 +1409,7 @@ export const FirstPersonControls = () => {
  * Rendered as a regular DOM overlay (not inside the Canvas).
  */
 export const FirstPersonOverlay = ({ onExit }: { onExit: () => void }) => {
+  const { t } = useTranslation()
   const [isLocked, setIsLocked] = useState(false)
   const hasPlacedSpawn = useScene((state) =>
     Object.values(state.nodes).some((node) => node.type === 'spawn'),
@@ -1452,14 +1454,14 @@ export const FirstPersonOverlay = ({ onExit }: { onExit: () => void }) => {
           <kbd className="rounded border border-border/50 bg-accent/50 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
             ESC
           </kbd>
-          Exit Street View
+          {t('Exit Street View')}
         </button>
       </div>
 
       {!hasPlacedSpawn && (
         <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2">
           <div className="rounded-2xl border border-sky-300/35 bg-slate-950/88 px-4 py-2 text-center text-slate-100 text-sm shadow-lg backdrop-blur-xl">
-            Place a Spawn Point from the Build tab to control where walkthrough starts.
+            {t('Place a Spawn Point from the Build tab to control where walkthrough starts.')}
           </div>
         </div>
       )}
@@ -1467,15 +1469,15 @@ export const FirstPersonOverlay = ({ onExit }: { onExit: () => void }) => {
       {isLocked && (
         <div className="pointer-events-none absolute top-1/2 right-6 z-40 -translate-y-1/2">
           <div className="flex min-w-[148px] flex-col gap-3 rounded-2xl border border-border/35 bg-background/80 px-4 py-4 shadow-lg backdrop-blur-xl">
-            <ControlHint keys={['W', 'A', 'S', 'D']} label="Move" />
+            <ControlHint keys={['W', 'A', 'S', 'D']} label={t('Move')} />
             <div className="h-px w-full bg-border/30" />
-            <InlineControlHint keyLabel="Space" label="Jump" />
-            <InlineControlHint keyLabel="Shift" label="Sprint" />
-            <InlineControlHint keyLabel="E / R" label="Interact" />
-            <InlineControlHint keyLabel="T" label="Close" />
+            <InlineControlHint keyLabel="Space" label={t('Jump')} />
+            <InlineControlHint keyLabel="Shift" label={t('Sprint')} />
+            <InlineControlHint keyLabel="E / R" label={t('Interact')} />
+            <InlineControlHint keyLabel="T" label={t('Close')} />
             <div className="h-px w-full bg-border/30" />
             <span className="text-center text-muted-foreground/60 text-xs">
-              Click to look around
+              {t('Click to look around')}
             </span>
           </div>
         </div>

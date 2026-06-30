@@ -11,6 +11,7 @@ import {
   useState,
 } from 'react'
 import { useIsMobile } from '../../../hooks/use-mobile'
+import { localizeNodeName } from '../../../lib/node-name-i18n'
 import { cn } from '../../../lib/utils'
 
 const DRAG_MARGIN = 8
@@ -240,7 +241,7 @@ export function PanelWrapper({
                 <span className="flex shrink-0 items-center justify-center">{icon}</span>
               ))}
             <h2 className="truncate font-semibold text-foreground text-sm tracking-tight">
-              {title}
+              {localizeNodeName(title)}
             </h2>
           </div>
 

@@ -1,6 +1,8 @@
 import { type AnyNodeId, useScene } from '@pascal-app/core'
 import { Pencil } from 'lucide-react'
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { localizeNodeName } from './../../../../../lib/node-name-i18n'
 import { cn } from './../../../../../lib/utils'
 
 interface InlineRenameInputProps {
@@ -20,6 +22,8 @@ export const InlineRenameInput = memo(function InlineRenameInput({
   className,
   onStartEditing,
 }: InlineRenameInputProps) {
+  // Subscribe to language changes so the localized display label re-renders.
+  useTranslation()
   const updateNode = useScene((s) => s.updateNode)
   const name = useScene((s) => s.nodes[nodeId]?.name)
   const [value, setValue] = useState(name || '')
@@ -61,7 +65,7 @@ export const InlineRenameInput = memo(function InlineRenameInput({
     return (
       <div className="group/rename flex h-5 min-w-0 items-center gap-1">
         <span className={cn('truncate border-transparent border-b', className)}>
-          {name || defaultName}
+          {localizeNodeName(name || defaultName)}
         </span>
         {onStartEditing && (
           <button
@@ -89,7 +93,7 @@ export const InlineRenameInput = memo(function InlineRenameInput({
       onClick={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
       onKeyDown={handleKeyDown}
-      placeholder={defaultName}
+      placeholder={localizeNodeName(defaultName)}
       ref={inputRef}
       size={inputSize}
       type="text"

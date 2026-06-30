@@ -10,6 +10,7 @@ import {
 import { useViewer } from '@pascal-app/viewer'
 import { Eraser, Plus, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   buildResetSurfaceMaterialUpdates,
   resolvePaintTargetFromSelection,
@@ -28,6 +29,7 @@ import { SceneMaterialList } from './scene-material-list'
  * scene-material footer (always visible, with a `+` to add a custom material).
  */
 export function MaterialPaintPanel() {
+  const { t } = useTranslation()
   const activePaintMaterial = useEditor((state) => state.activePaintMaterial)
   const activePaintTarget = useEditor((state) => state.activePaintTarget)
   const setActivePaintMaterial = useEditor((state) => state.setActivePaintMaterial)
@@ -92,7 +94,7 @@ export function MaterialPaintPanel() {
           variant={paintEraser ? 'default' : 'outline'}
         >
           <Eraser />
-          Erase
+          {t('Erase')}
         </Button>
         <Button
           className="flex-1"
@@ -102,7 +104,7 @@ export function MaterialPaintPanel() {
           variant="outline"
         >
           <RotateCcw />
-          Reset all
+          {t('Reset all')}
         </Button>
       </div>
 
@@ -120,12 +122,12 @@ export function MaterialPaintPanel() {
       <div className="mt-2 shrink-0 space-y-1.5 border-border/60 border-t pt-2">
         <div className="flex items-center justify-between">
           <span className="font-medium text-muted-foreground text-xs uppercase tracking-[0.12em]">
-            Scene materials
+            {t('Scene materials')}
           </span>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                aria-label="Add material"
+                aria-label={t('Add material')}
                 onClick={createCustomMaterial}
                 size="icon-sm"
                 type="button"
@@ -134,7 +136,7 @@ export function MaterialPaintPanel() {
                 <Plus />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Add material</TooltipContent>
+            <TooltipContent>{t('Add material')}</TooltipContent>
           </Tooltip>
         </div>
         <div className="subtle-scrollbar max-h-56 overflow-y-auto">
@@ -142,7 +144,7 @@ export function MaterialPaintPanel() {
             <SceneMaterialList autoEditId={autoEditMaterialId} />
           ) : (
             <p className="px-0.5 py-1 text-muted-foreground text-xs">
-              No custom materials yet — add one with +.
+              {t('No custom materials yet — add one with +.')}
             </p>
           )}
         </div>

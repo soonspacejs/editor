@@ -13,8 +13,10 @@ import {
 import { useViewer } from '@pascal-app/viewer'
 import { Move, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function SpawnPanel() {
+  const { t } = useTranslation()
   const selectedId = useViewer((s) => s.selection.selectedIds[0])
   const setSelection = useViewer((s) => s.setSelection)
   const updateNode = useScene((s) => s.updateNode)
@@ -97,10 +99,10 @@ export default function SpawnPanel() {
     <PanelWrapper
       icon="/icons/spawn-point.webp"
       onClose={handleClose}
-      title="Spawn Point"
+      title={t('Spawn Point')}
       width={300}
     >
-      <PanelSection title="Position">
+      <PanelSection title={t('Position')}>
         <SliderControl
           label="X"
           max={node.position[0] + 2}
@@ -139,9 +141,9 @@ export default function SpawnPanel() {
         />
       </PanelSection>
 
-      <PanelSection title="Facing">
+      <PanelSection title={t('Facing')}>
         <SliderControl
-          label="Yaw"
+          label={t('Yaw')}
           max={storedRotationDegrees + 90}
           min={storedRotationDegrees - 90}
           onChange={handleRotationChange}
@@ -153,13 +155,13 @@ export default function SpawnPanel() {
         />
       </PanelSection>
 
-      <PanelSection title="Actions">
+      <PanelSection title={t('Actions')}>
         <ActionGroup>
-          <ActionButton icon={<Move className="h-4 w-4" />} label="Move" onClick={handleMove} />
+          <ActionButton icon={<Move className="h-4 w-4" />} label={t('Move')} onClick={handleMove} />
           <ActionButton
             className="border-red-500/40 text-red-200 hover:bg-red-500/15"
             icon={<Trash2 className="h-4 w-4" />}
-            label="Delete"
+            label={t('Delete')}
             onClick={handleDelete}
           />
         </ActionGroup>

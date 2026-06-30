@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ColorDot } from '../../../../components/ui/primitives/color-dot'
 import {
   DropdownMenu,
@@ -35,6 +36,7 @@ interface CollectionsPopoverProps {
 }
 
 export function CollectionsPopover({ nodeId, collectionIds, children }: CollectionsPopoverProps) {
+  const { t } = useTranslation()
   const collections = useScene((s) => s.collections)
   const nodes = useScene((s) => s.nodes)
   const createCollection = useScene((s) => s.createCollection)
@@ -101,7 +103,7 @@ export function CollectionsPopover({ nodeId, collectionIds, children }: Collecti
           <div className="flex items-center gap-1.5">
             <Layers className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="font-semibold text-foreground text-xs tracking-tight">
-              Collections
+              {t('Collections')}
             </span>
           </div>
           <button
@@ -113,7 +115,7 @@ export function CollectionsPopover({ nodeId, collectionIds, children }: Collecti
             type="button"
           >
             <Plus className="h-3 w-3" />
-            New
+            {t('New')}
           </button>
         </div>
 
@@ -131,7 +133,7 @@ export function CollectionsPopover({ nodeId, collectionIds, children }: Collecti
                   setCreateName('')
                 }
               }}
-              placeholder="Collection name…"
+              placeholder={t('Collection name…')}
               value={createName}
             />
             <button
@@ -161,7 +163,7 @@ export function CollectionsPopover({ nodeId, collectionIds, children }: Collecti
             <div className="flex flex-col items-center justify-center gap-2 px-4 py-8 text-center">
               <Layers className="h-6 w-6 text-muted-foreground/40" />
               <p className="text-muted-foreground text-xs">
-                No collections yet. Create one to group items together.
+                {t('No collections yet. Create one to group items together.')}
               </p>
             </div>
           ) : (
@@ -179,7 +181,7 @@ export function CollectionsPopover({ nodeId, collectionIds, children }: Collecti
                       key={collection.id}
                     >
                       <span className="truncate text-foreground/80 text-xs">
-                        Delete "{collection.name}"?
+                        {t('Delete "{{name}}"?', { name: collection.name })}
                       </span>
                       <div className="flex shrink-0 items-center gap-1">
                         <button
@@ -190,14 +192,14 @@ export function CollectionsPopover({ nodeId, collectionIds, children }: Collecti
                           }}
                           type="button"
                         >
-                          Delete
+                          {t('Delete')}
                         </button>
                         <button
                           className="rounded-md px-2 py-0.5 font-medium text-[11px] text-muted-foreground transition-colors hover:bg-white/10"
                           onClick={() => setDeletingId(null)}
                           type="button"
                         >
-                          Cancel
+                          {t('Cancel')}
                         </button>
                       </div>
                     </li>
@@ -308,14 +310,14 @@ export function CollectionsPopover({ nodeId, collectionIds, children }: Collecti
                             }}
                           >
                             <Pencil className="h-3.5 w-3.5" />
-                            Rename
+                            {t('Rename')}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeletingId(collection.id)}
                             variant="destructive"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
-                            Delete
+                            {t('Delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

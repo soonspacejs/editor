@@ -2,6 +2,7 @@
 
 import type { LevelNode } from '@pascal-app/core'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { LevelDuplicatePreset } from '../../lib/level-duplication'
 import { getLevelDisplayName } from '@pascal-app/core'
 import { cn } from '../../lib/utils'
@@ -41,11 +42,6 @@ const DUPLICATE_PRESETS: Array<{
   },
 ]
 
-function getLevelLabel(level: LevelNode | null) {
-  if (!level) return 'this level'
-  return getLevelDisplayName(level)
-}
-
 export function LevelDuplicateDialog({
   open,
   level,
@@ -57,7 +53,9 @@ export function LevelDuplicateDialog({
   onConfirm: (preset: LevelDuplicatePreset) => void
   onOpenChange: (open: boolean) => void
 }) {
+  const { t } = useTranslation()
   const [preset, setPreset] = useState<LevelDuplicatePreset>('everything')
+  const levelLabel = level ? getLevelDisplayName(level) : t('this level')
 
   useEffect(() => {
     if (open) {
@@ -69,8 +67,10 @@ export function LevelDuplicateDialog({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Duplicate Level</DialogTitle>
-          <DialogDescription>Choose what to copy from {getLevelLabel(level)}.</DialogDescription>
+          <DialogTitle>{t('Duplicate Level')}</DialogTitle>
+          <DialogDescription>
+            {t('Choose what to copy from {{level}}.', { level: levelLabel })}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-2">
@@ -86,8 +86,8 @@ export function LevelDuplicateDialog({
               onClick={() => setPreset(option.id)}
               type="button"
             >
-              <div className="font-medium text-sm">{option.label}</div>
-              <div className="mt-1 text-muted-foreground text-xs">{option.description}</div>
+              <div className="font-medium text-sm">{t(option.label)}</div>
+              <div className="mt-1 text-muted-foreground text-xs">{t(option.description)}</div>
             </button>
           ))}
         </div>
@@ -98,14 +98,14 @@ export function LevelDuplicateDialog({
             onClick={() => onOpenChange(false)}
             type="button"
           >
-            Cancel
+            {t('Cancel')}
           </button>
           <button
             className="cursor-pointer rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm transition-opacity hover:opacity-90"
             onClick={() => onConfirm(preset)}
             type="button"
           >
-            Duplicate
+            {t('Duplicate')}
           </button>
         </DialogFooter>
       </DialogContent>

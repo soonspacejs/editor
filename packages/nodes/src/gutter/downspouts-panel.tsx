@@ -11,6 +11,7 @@ import {
 } from '@pascal-app/core'
 import { ActionButton, ActionGroup, PanelSection, triggerSFX } from '@pascal-app/editor'
 import { useViewer } from '@pascal-app/viewer'
+import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
 import { computeEaveY } from './eave-snap'
 import { resolveGutterOutletById } from './outlet-lookup'
@@ -56,6 +57,7 @@ function nextOutletOffset(gutter: GutterNode): number {
  * on it, and each row's ✕ removes both the downspout and its outlet.
  */
 export default function DownspoutsPanel() {
+  const { t } = useTranslation()
   const selectedId = useViewer((s) => s.selection.selectedIds[0]) as AnyNodeId | undefined
   const setSelection = useViewer((s) => s.setSelection)
 
@@ -128,7 +130,7 @@ export default function DownspoutsPanel() {
   }
 
   return (
-    <PanelSection title="Downspouts">
+    <PanelSection title={t('Downspouts')}>
       <div className="flex flex-col gap-1">
         {downspouts.map((d, i) => (
           <div
@@ -140,10 +142,10 @@ export default function DownspoutsPanel() {
               onClick={() => handleSelectDownspout(d.id as AnyNodeId)}
               type="button"
             >
-              {d.name || `Downspout ${i + 1}`}
+              {d.name || t('Downspout {{count}}', { count: i + 1 })}
             </button>
             <button
-              aria-label="Remove downspout"
+              aria-label={t('Remove downspout')}
               className="ml-2 text-muted-foreground text-xs transition-colors hover:text-red-400"
               onClick={() => handleRemove(d)}
               type="button"
@@ -153,7 +155,7 @@ export default function DownspoutsPanel() {
           </div>
         ))}
         <ActionGroup>
-          <ActionButton label="Add Downspout" onClick={handleAddDownspout} />
+          <ActionButton label={t('Add Downspout')} onClick={handleAddDownspout} />
         </ActionGroup>
       </div>
     </PanelSection>

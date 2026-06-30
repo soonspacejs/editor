@@ -22,6 +22,7 @@ import {
 import { useViewer } from '@pascal-app/viewer'
 import { Copy, Move, Trash2 } from 'lucide-react'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { CupolaNode } from './schema'
 
 /**
@@ -30,6 +31,7 @@ import type { CupolaNode } from './schema'
  * flow the placement tool uses. Mirrors the box-vent panel.
  */
 export default function CupolaPanel() {
+  const { t } = useTranslation()
   const selectedId = useViewer((s) => s.selection.selectedIds[0])
   const setSelection = useViewer((s) => s.setSelection)
   const updateNode = useScene((s) => s.updateNode)
@@ -140,31 +142,31 @@ export default function CupolaPanel() {
       icon="/icons/roof.webp"
       onBack={node.roofSegmentId ? handleBack : undefined}
       onClose={handleClose}
-      title={node.name || 'Cupola'}
+      title={node.name || t('Cupola')}
       width={300}
     >
-      <PanelSection title="Style">
+      <PanelSection title={t('Style')}>
         <SegmentedControl
           onChange={(v) => handleUpdate({ roofStyle: v as CupolaNode['roofStyle'] })}
           options={[
-            { label: 'Dome', value: 'dome' },
-            { label: 'Pyramid', value: 'pyramid' },
+            { label: t('Dome'), value: 'dome' },
+            { label: t('Pyramid'), value: 'pyramid' },
           ]}
           value={node.roofStyle ?? 'dome'}
         />
         <SegmentedControl
           onChange={(v) => handleUpdate({ finial: v === 'on' })}
           options={[
-            { label: 'Finial', value: 'on' },
-            { label: 'No Finial', value: 'off' },
+            { label: t('Finial'), value: 'on' },
+            { label: t('No Finial'), value: 'off' },
           ]}
           value={(node.finial ?? true) ? 'on' : 'off'}
         />
       </PanelSection>
 
-      <PanelSection title="Dimensions">
+      <PanelSection title={t('Dimensions')}>
         <SliderControl
-          label="Width"
+          label={t('Width')}
           max={2}
           min={0.3}
           onChange={(v) => previewProp({ width: v })}
@@ -176,7 +178,7 @@ export default function CupolaPanel() {
           value={Math.round(node.width * 100) / 100}
         />
         <SliderControl
-          label="Depth"
+          label={t('Depth')}
           max={2}
           min={0.3}
           onChange={(v) => previewProp({ depth: v })}
@@ -188,7 +190,7 @@ export default function CupolaPanel() {
           value={Math.round(node.depth * 100) / 100}
         />
         <SliderControl
-          label="Height"
+          label={t('Height')}
           max={2.5}
           min={0.4}
           onChange={(v) => previewProp({ height: v })}
@@ -201,9 +203,9 @@ export default function CupolaPanel() {
         />
       </PanelSection>
 
-      <PanelSection title="Position">
+      <PanelSection title={t('Position')}>
         <SliderControl
-          label="X"
+          label={t('X')}
           max={Math.round(((segment?.width ?? 10) / 2) * 100) / 100}
           min={-Math.round(((segment?.width ?? 10) / 2) * 100) / 100}
           onChange={(v) =>
@@ -219,7 +221,7 @@ export default function CupolaPanel() {
           value={Math.round((node.position[0] ?? 0) * 100) / 100}
         />
         <SliderControl
-          label="Y"
+          label={t('Y')}
           max={Math.max(
             (segment?.wallHeight ?? 3) + (segment ? getActiveRoofHeight(segment) : 3) + 2,
             (node.position[1] ?? 0) + 0.1,
@@ -238,7 +240,7 @@ export default function CupolaPanel() {
           value={Math.round((node.position[1] ?? 0) * 100) / 100}
         />
         <SliderControl
-          label="Z"
+          label={t('Z')}
           max={Math.round(((segment?.depth ?? 10) / 2) * 100) / 100}
           min={-Math.round(((segment?.depth ?? 10) / 2) * 100) / 100}
           onChange={(v) =>
@@ -254,7 +256,7 @@ export default function CupolaPanel() {
           value={Math.round((node.position[2] ?? 0) * 100) / 100}
         />
         <SliderControl
-          label="Rotation"
+          label={t('Rotation')}
           max={180}
           min={-180}
           onChange={(deg) => previewProp({ rotation: (deg * Math.PI) / 180 })}
@@ -267,18 +269,18 @@ export default function CupolaPanel() {
         />
       </PanelSection>
 
-      <PanelSection title="Actions">
+      <PanelSection title={t('Actions')}>
         <ActionGroup>
-          <ActionButton icon={<Move className="h-3.5 w-3.5" />} label="Move" onClick={handleMove} />
+          <ActionButton icon={<Move className="h-3.5 w-3.5" />} label={t('Move')} onClick={handleMove} />
           <ActionButton
             icon={<Copy className="h-3.5 w-3.5" />}
-            label="Duplicate"
+            label={t('Duplicate')}
             onClick={handleDuplicate}
           />
           <ActionButton
             className="hover:bg-red-500/20"
             icon={<Trash2 className="h-3.5 w-3.5 text-red-400" />}
-            label="Delete"
+            label={t('Delete')}
             onClick={handleDelete}
           />
         </ActionGroup>

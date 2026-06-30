@@ -2,6 +2,7 @@ import { type BuildingNode, LevelNode, useScene } from '@pascal-app/core'
 import { useViewer } from '@pascal-app/viewer'
 import { Building2, Plus } from 'lucide-react'
 import { memo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
 import {
   Tooltip,
@@ -22,6 +23,7 @@ export const BuildingTreeNode = memo(function BuildingTreeNode({
   depth,
   isLast,
 }: BuildingTreeNodeProps) {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(true)
   const createNode = useScene((state) => state.createNode)
   const isVisible = useScene((s) => s.nodes[nodeId]?.visible !== false)
@@ -63,7 +65,7 @@ export const BuildingTreeNode = memo(function BuildingTreeNode({
                 <Plus className="h-3 w-3" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right">Add new level</TooltipContent>
+            <TooltipContent side="right">{t('Add new level')}</TooltipContent>
           </Tooltip>
         </div>
       }
@@ -75,7 +77,7 @@ export const BuildingTreeNode = memo(function BuildingTreeNode({
       isLast={isLast}
       isSelected={isSelected}
       isVisible={isVisible}
-      label={name || 'Building'}
+      label={name || t('Building')}
       onClick={handleClick}
       onDoubleClick={() => focusTreeNode(nodeId)}
       onToggle={() => setExpanded(!expanded)}

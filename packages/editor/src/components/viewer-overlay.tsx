@@ -34,6 +34,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { flushSync } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
 import { cn } from '../lib/utils'
 import useEditor from '../store/use-editor'
@@ -123,6 +124,7 @@ const TEXTURE_OPTIONS = [
 ] as const
 
 function RenderModeMenu() {
+  const { t } = useTranslation()
   const shading = useViewer((s) => s.shading)
   const textures = useViewer((s) => s.textures)
   const active = SHADING_OPTIONS.find((o) => o.id === shading) ?? SHADING_OPTIONS[0]
@@ -132,7 +134,7 @@ function RenderModeMenu() {
       <DropdownMenuTrigger asChild>
         <ActionButton
           className="text-muted-foreground/80 hover:bg-white/5 hover:text-foreground"
-          label={`Render: ${active.name}`}
+          label={`${t('Render')}: ${t(active.name)}`}
           size="icon"
           tooltipSide="top"
           variant="ghost"
@@ -150,8 +152,8 @@ function RenderModeMenu() {
             >
               <OptionIcon />
               <div className="flex flex-col">
-                <span className="text-foreground">{option.name}</span>
-                <span className="text-muted-foreground text-xs">{option.detail}</span>
+                <span className="text-foreground">{t(option.name)}</span>
+                <span className="text-muted-foreground text-xs">{t(option.detail)}</span>
               </div>
               {shading === option.id ? <Check className="ml-auto text-foreground" /> : null}
             </DropdownMenuItem>
@@ -167,8 +169,8 @@ function RenderModeMenu() {
             >
               <OptionIcon />
               <div className="flex flex-col">
-                <span className="text-foreground">{option.name}</span>
-                <span className="text-muted-foreground text-xs">{option.detail}</span>
+                <span className="text-foreground">{t(option.name)}</span>
+                <span className="text-muted-foreground text-xs">{t(option.detail)}</span>
               </div>
               {textures === option.id ? <Check className="ml-auto text-foreground" /> : null}
             </DropdownMenuItem>
@@ -180,6 +182,7 @@ function RenderModeMenu() {
 }
 
 function SceneThemeMenu() {
+  const { t } = useTranslation()
   const sceneTheme = useViewer((s) => s.sceneTheme)
   const active = getSceneTheme(sceneTheme)
   return (
@@ -187,7 +190,7 @@ function SceneThemeMenu() {
       <DropdownMenuTrigger asChild>
         <ActionButton
           className="text-muted-foreground/80 hover:bg-white/5 hover:text-foreground"
-          label={`Theme: ${active.name}`}
+          label={`${t('Theme')}: ${t(active.name)}`}
           size="icon"
           tooltipSide="top"
           variant="ghost"
@@ -216,7 +219,7 @@ function SceneThemeMenu() {
                   />
                 ))}
               </span>
-              <span className="text-foreground">{sceneThemeOption.name}</span>
+              <span className="text-foreground">{t(sceneThemeOption.name)}</span>
               {sceneTheme === sceneThemeOption.id ? (
                 <Check className="ml-auto text-foreground" />
               ) : null}
@@ -235,6 +238,7 @@ const EDGE_OPTIONS = [
 ] as const satisfies readonly { id: EdgeMode; name: string; detail: string }[]
 
 function EdgesMenu() {
+  const { t } = useTranslation()
   const edges = useViewer((s) => s.edges)
   const active = EDGE_OPTIONS.find((o) => o.id === edges) ?? EDGE_OPTIONS[0]
   return (
@@ -246,7 +250,7 @@ function EdgesMenu() {
               ? 'text-muted-foreground/80 hover:bg-white/5 hover:text-foreground'
               : 'bg-white/10 text-foreground'
           }
-          label={`Edges: ${active.name}`}
+          label={`${t('Edges')}: ${t(active.name)}`}
           size="icon"
           tooltipSide="top"
           variant="ghost"
@@ -261,8 +265,8 @@ function EdgesMenu() {
             onSelect={() => useViewer.getState().setEdges(option.id)}
           >
             <div className="flex flex-col">
-              <span className="text-foreground">{option.name}</span>
-              <span className="text-muted-foreground text-xs">{option.detail}</span>
+              <span className="text-foreground">{t(option.name)}</span>
+              <span className="text-muted-foreground text-xs">{t(option.detail)}</span>
             </div>
             {edges === option.id ? <Check className="ml-auto text-foreground" /> : null}
           </DropdownMenuItem>
@@ -299,6 +303,7 @@ export const ViewerOverlay = ({
   canShowGuides = true,
   onBack,
 }: ViewerOverlayProps) => {
+  const { t } = useTranslation()
   const selection = useViewer((s) => s.selection)
   const showScans = useViewer((s) => s.showScans)
   const showGuides = useViewer((s) => s.showGuides)
@@ -374,7 +379,7 @@ export const ViewerOverlay = ({
             )}
             <div className="min-w-0">
               <div className="truncate font-medium text-foreground text-sm">
-                {projectName || 'Untitled'}
+                {projectName || t('Untitled')}
               </div>
               {owner?.username && (
                 <Link
@@ -395,7 +400,7 @@ export const ViewerOverlay = ({
                   className="text-muted-foreground transition-colors hover:text-foreground"
                   onClick={() => handleBreadcrumbClick('root')}
                 >
-                  Site
+                  {t('Site')}
                 </button>
 
                 {building && (
@@ -405,7 +410,7 @@ export const ViewerOverlay = ({
                       className={`truncate transition-colors ${level ? 'text-muted-foreground hover:text-foreground' : 'font-medium text-foreground'}`}
                       onClick={() => handleBreadcrumbClick('building')}
                     >
-                      {building.name || 'Building'}
+                      {building.name || t('Building')}
                     </button>
                   </>
                 )}
@@ -437,7 +442,7 @@ export const ViewerOverlay = ({
                   <>
                     <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
                     <span className="truncate font-medium text-foreground">
-                      {getNodeName(selectedNode)}
+                      {t(getNodeName(selectedNode))}
                     </span>
                   </>
                 )}
@@ -450,7 +455,7 @@ export const ViewerOverlay = ({
         {building && levels.length > 0 && (
           <div className="pointer-events-auto flex w-48 flex-col overflow-hidden rounded-2xl border border-border/40 bg-background/95 py-1 shadow-lg backdrop-blur-xl transition-colors duration-200 ease-out">
             <span className="px-3 py-2 font-medium text-[10px] text-muted-foreground uppercase tracking-wider">
-              Levels
+              {t('Levels')}
             </span>
             <div className="flex flex-col">
               {levels.map((lvl) => {
@@ -476,7 +481,7 @@ export const ViewerOverlay = ({
                         <Layers className="h-3.5 w-3.5" />
                       </span>
                       <div className="min-w-0 flex-1 truncate text-left">
-                        {lvl.name || `Level ${lvl.level}`}
+                        {lvl.name || t('Level {{count}}', { count: lvl.level })}
                       </div>
                     </div>
                   </button>
@@ -499,14 +504,14 @@ export const ViewerOverlay = ({
                     ? 'bg-white/10'
                     : 'opacity-60 grayscale hover:bg-white/5 hover:opacity-100 hover:grayscale-0'
                 }
-                label={`Scans: ${showScans ? 'Visible' : 'Hidden'}`}
+                label={`${t('Scans')}: ${showScans ? t('Visible') : t('Hidden')}`}
                 onClick={() => useViewer.getState().setShowScans(!showScans)}
                 size="icon"
                 tooltipSide="top"
                 variant="ghost"
               >
                 <img
-                  alt="Scans"
+                  alt={t('Scans')}
                   className="h-[28px] w-[28px] object-contain"
                   src="/icons/mesh.webp"
                 />
@@ -520,14 +525,14 @@ export const ViewerOverlay = ({
                     ? 'bg-white/10'
                     : 'opacity-60 grayscale hover:bg-white/5 hover:opacity-100 hover:grayscale-0'
                 }
-                label={`Guides: ${showGuides ? 'Visible' : 'Hidden'}`}
+                label={`${t('Guides')}: ${showGuides ? t('Visible') : t('Hidden')}`}
                 onClick={() => useViewer.getState().setShowGuides(!showGuides)}
                 size="icon"
                 tooltipSide="top"
                 variant="ghost"
               >
                 <img
-                  alt="Guides"
+                  alt={t('Guides')}
                   className="h-[28px] w-[28px] object-contain"
                   src="/icons/floorplan.webp"
                 />
@@ -543,7 +548,7 @@ export const ViewerOverlay = ({
                   ? 'bg-violet-500/20 text-violet-400'
                   : 'hover:bg-white/5 hover:text-violet-400'
               }
-              label={`Camera: ${cameraMode === 'perspective' ? 'Perspective' : 'Orthographic'}`}
+              label={`${t('Camera')}: ${cameraMode === 'perspective' ? t('Perspective') : t('Orthographic')}`}
               onClick={() =>
                 useViewer
                   .getState()
@@ -570,7 +575,7 @@ export const ViewerOverlay = ({
                   ? 'text-muted-foreground/80 hover:bg-white/5 hover:text-foreground'
                   : 'bg-white/10 text-foreground',
               )}
-              label={`Levels: ${levelMode === 'manual' ? 'Manual' : levelModeLabels[levelMode as keyof typeof levelModeLabels]}`}
+              label={`${t('Levels')}: ${levelMode === 'manual' ? t('Manual') : t(levelModeLabels[levelMode as keyof typeof levelModeLabels])}`}
               onClick={() => {
                 if (levelMode === 'manual') return useViewer.getState().setLevelMode('stacked')
                 const modes: ('stacked' | 'exploded' | 'solo')[] = ['stacked', 'exploded', 'solo']
@@ -593,7 +598,7 @@ export const ViewerOverlay = ({
                   aria-hidden="true"
                   className="pointer-events-none absolute right-1 bottom-1 left-1 rounded border border-border/50 bg-background/70 px-0.5 py-[2px] text-center font-medium font-pixel text-[8px] text-foreground/85 leading-none tracking-[-0.02em] backdrop-blur-sm"
                 >
-                  {levelModeBadgeLabels[levelMode]}
+                  {t(levelModeBadgeLabels[levelMode])}
                 </span>
               </span>
             </ActionButton>
@@ -605,7 +610,7 @@ export const ViewerOverlay = ({
                   ? 'bg-white/10'
                   : 'opacity-60 grayscale hover:bg-white/5 hover:opacity-100 hover:grayscale-0'
               }
-              label={`Walls: ${wallModeConfig[wallMode as keyof typeof wallModeConfig].label}`}
+              label={`${t('Walls')}: ${t(wallModeConfig[wallMode as keyof typeof wallModeConfig].label)}`}
               onClick={() => {
                 const modes: ('cutaway' | 'up' | 'down' | 'translucent')[] = [
                   'cutaway',
@@ -631,14 +636,14 @@ export const ViewerOverlay = ({
             {/* Camera Actions */}
             <ActionButton
               className="group hidden hover:bg-white/5 sm:inline-flex"
-              label="Orbit Left"
+              label={t('Orbit Left')}
               onClick={() => emitter.emit('camera-controls:orbit-ccw')}
               size="icon"
               tooltipSide="top"
               variant="ghost"
             >
               <img
-                alt="Orbit Left"
+                alt={t('Orbit Left')}
                 className="h-[28px] w-[28px] -scale-x-100 object-contain opacity-70 transition-opacity group-hover:opacity-100"
                 src="/icons/rotate.webp"
               />
@@ -646,14 +651,14 @@ export const ViewerOverlay = ({
 
             <ActionButton
               className="group hidden hover:bg-white/5 sm:inline-flex"
-              label="Orbit Right"
+              label={t('Orbit Right')}
               onClick={() => emitter.emit('camera-controls:orbit-cw')}
               size="icon"
               tooltipSide="top"
               variant="ghost"
             >
               <img
-                alt="Orbit Right"
+                alt={t('Orbit Right')}
                 className="h-[28px] w-[28px] object-contain opacity-70 transition-opacity group-hover:opacity-100"
                 src="/icons/rotate.webp"
               />
@@ -661,14 +666,14 @@ export const ViewerOverlay = ({
 
             <ActionButton
               className="group hover:bg-white/5"
-              label="Top View"
+              label={t('Top View')}
               onClick={() => emitter.emit('camera-controls:top-view')}
               size="icon"
               tooltipSide="top"
               variant="ghost"
             >
               <img
-                alt="Top View"
+                alt={t('Top View')}
                 className="h-[28px] w-[28px] object-contain opacity-70 transition-opacity group-hover:opacity-100"
                 src="/icons/topview.webp"
               />
@@ -679,7 +684,7 @@ export const ViewerOverlay = ({
             {/* First-person walkthrough */}
             <ActionButton
               className="hover:bg-white/5 hover:text-emerald-400"
-              label="Walkthrough"
+              label={t('Walkthrough')}
               onClick={() => {
                 flushSync(() => useEditor.getState().setFirstPersonMode(true))
                 requestWalkthroughPointerLock()

@@ -16,6 +16,7 @@ import {
 import { useViewer } from '@pascal-app/viewer'
 import { Copy, DoorOpen, FlipHorizontal2, Move, Trash2 } from 'lucide-react'
 import { useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { scaleHandleHeight } from './door-math'
 
 const doorTypeOptions = [
@@ -133,6 +134,7 @@ function isSameDoorValue(current: unknown, next: unknown): boolean {
 }
 
 export default function DoorPanel() {
+  const { t } = useTranslation()
   const selectedId = useViewer((s) => s.selection.selectedIds[0])
   const setSelection = useViewer((s) => s.setSelection)
   const deleteNode = useScene((s) => s.deleteNode)
@@ -332,19 +334,22 @@ export default function DoorPanel() {
   const supportsHandleSide = doorType === 'hinged'
   const supportsTopShape = isSwingDoor
   const showFlipSide = !isCutoutOnly
-  const showFoldSection = isFoldingDoor && !isCutoutOnly
-  const showSlideSection = isSlidingDoor && !isCutoutOnly
-  const showGarageSection =
-    (isSectionalGarageDoor || isRollupGarageDoor || isTiltupGarageDoor) && !isCutoutOnly
-  const showOpeningShapeSection = isCutoutOnly
-  const showDoorShapeSection = !isCutoutOnly && supportsTopShape
+  // Simplified inspector — only Position, Dimensions, and Frame are shown.
+  // Restore a flag's original expression to bring a section back.
+  const showTypeSection = false
+  const showFoldSection = false
+  const showSlideSection = false
+  const showGarageSection = false
+  const showOpeningShapeSection = false
+  const showDoorShapeSection = false
   const showFrameSection = !isCutoutOnly
-  const showContentPaddingSection = !isCutoutOnly && !isGarageDoor
-  const showSwingSection = isSwingDoor
-  const showThresholdSection = isSwingDoor
-  const showHandleSection = isSwingDoor
-  const showHardwareSection = isSwingDoor
-  const showSegmentsSection = !isCutoutOnly && !isGarageDoor
+  const showContentPaddingSection = false
+  const showSwingSection = false
+  const showThresholdSection = false
+  const showHandleSection = false
+  const showHardwareSection = false
+  const showSegmentsSection = false
+  const showActionsSection = false
   const maxDoorWidth = isGarageDoor ? 6 : 3
 
   const setOpeningTopRadius = (index: number, value: number, commit = false) => {
@@ -518,76 +523,79 @@ export default function DoorPanel() {
     <PanelWrapper
       icon="/icons/door.webp"
       onClose={handleClose}
-      title={node.name || 'Door'}
+      title={node.name || t('Door')}
       width={320}
     >
-      <PanelSection title="Type">
-        <div className="flex flex-col gap-2 px-1 pb-1">
-          <SegmentedControl
-            onChange={(v) =>
-              handleUpdate(
-                v === 'opening'
-                  ? {
-                      openingKind: v,
-                      openingShape,
-                      openingRadiusMode,
-                      openingTopRadii,
-                      cornerRadius,
-                      archHeight,
-                      openingRevealRadius,
-                    }
-                  : v === 'garage'
+      {showTypeSection && (
+        <PanelSection title={t('Type')}>
+          <div className="flex flex-col gap-2 px-1 pb-1">
+            <SegmentedControl
+              onChange={(v) =>
+                handleUpdate(
+                  v === 'opening'
                     ? {
-                        openingKind: 'door',
-                        ...getDoorTypeUpdates(isGarageDoor ? doorType : 'garage-sectional'),
+                        openingKind: v,
+                        openingShape,
+                        openingRadiusMode,
+                        openingTopRadii,
+                        cornerRadius,
+                        archHeight,
+                        openingRevealRadius,
                       }
-                    : {
-                        openingKind: 'door',
-                        ...(isGarageDoor ? getDoorTypeUpdates('hinged') : {}),
-                      },
-              )
-            }
-            options={[
-              { label: 'Door', value: 'door' },
-              { label: 'Opening', value: 'opening' },
-              { label: 'Garage', value: 'garage' },
-            ]}
-            value={typeMode}
-          />
-        </div>
-        {!isOpening && (
-          <div className="grid grid-cols-2 gap-2 px-1 pt-1">
-            {(isGarageDoor ? garageDoorTypeOptions : doorTypeOptions).map((option) => {
-              const isSelected = doorType === option.value
-              return (
-                <button
-                  className={cn(
-                    'flex min-h-12 items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left text-xs transition-colors',
-                    isSelected
-                      ? 'border-orange-400/60 bg-orange-400/10 text-foreground'
-                      : 'border-border/50 bg-[#2C2C2E] text-muted-foreground hover:bg-[#3e3e3e] hover:text-foreground',
-                    !option.available &&
-                      'cursor-not-allowed opacity-45 hover:bg-[#2C2C2E] hover:text-muted-foreground',
-                  )}
-                  disabled={!option.available}
-                  key={option.value}
-                  onClick={() => handleUpdate(getDoorTypeUpdates(option.value))}
-                  type="button"
-                >
-                  <DoorOpen className="h-4 w-4 shrink-0" />
-                  <span className="truncate font-medium">{option.label}</span>
-                </button>
-              )
-            })}
+                    : v === 'garage'
+                      ? {
+                          openingKind: 'door',
+                          ...getDoorTypeUpdates(isGarageDoor ? doorType : 'garage-sectional'),
+                        }
+                      : {
+                          openingKind: 'door',
+                          ...(isGarageDoor ? getDoorTypeUpdates('hinged') : {}),
+                        },
+                )
+              }
+              options={[
+                { label: t('Door'), value: 'door' },
+                { label: t('Opening'), value: 'opening' },
+                { label: t('Garage'), value: 'garage' },
+              ]}
+              value={typeMode}
+            />
           </div>
-        )}
-      </PanelSection>
+          {!isOpening && (
+            <div className="grid grid-cols-2 gap-2 px-1 pt-1">
+              {(isGarageDoor ? garageDoorTypeOptions : doorTypeOptions).map((option) => {
+                const isSelected = doorType === option.value
+                return (
+                  <button
+                    className={cn(
+                      'flex min-h-12 items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left text-xs transition-colors',
+                      isSelected
+                        ? 'border-orange-400/60 bg-orange-400/10 text-foreground'
+                        : 'border-border/50 bg-[#2C2C2E] text-muted-foreground hover:bg-[#3e3e3e] hover:text-foreground',
+                      !option.available &&
+                        'cursor-not-allowed opacity-45 hover:bg-[#2C2C2E] hover:text-muted-foreground',
+                    )}
+                    disabled={!option.available}
+                    key={option.value}
+                    onClick={() => handleUpdate(getDoorTypeUpdates(option.value))}
+                    type="button"
+                  >
+                    <DoorOpen className="h-4 w-4 shrink-0" />
+                    <span className="truncate font-medium">{t(option.label)}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </PanelSection>
+      )}
 
-      <PanelSection title="Position">
+      <PanelSection title={t('Position')}>
         <SliderControl
           label={
             <>
-              X<sub className="ml-[1px] text-[11px] opacity-70">wall</sub>
+              {t('X')}
+              <sub className="ml-[1px] text-[11px] opacity-70">{t('wall')}</sub>
             </>
           }
           max={10}
@@ -603,7 +611,7 @@ export default function DoorPanel() {
             <ActionButton
               className="w-full"
               icon={<FlipHorizontal2 className="h-4 w-4" />}
-              label="Flip Side"
+              label={t('Flip Side')}
               onClick={handleFlip}
             />
           </div>
@@ -611,11 +619,11 @@ export default function DoorPanel() {
       </PanelSection>
 
       {showFoldSection && (
-        <PanelSection title="Fold">
+        <PanelSection title={t('Fold')}>
           <div className="flex flex-col gap-2 px-1 pb-1">
             <div className="space-y-1">
               <span className="font-medium text-[10px] text-muted-foreground/80 uppercase tracking-wider">
-                Panels
+                {t('Panels')}
               </span>
               <SegmentedControl
                 onChange={(v) => handleUpdate({ leafCount: v === '2' ? 2 : 4 })}
@@ -628,7 +636,7 @@ export default function DoorPanel() {
             </div>
           </div>
           <SliderControl
-            label="Open"
+            label={t('Open')}
             max={100}
             min={0}
             onChange={(v) => handleUpdate({ operationState: v / 100 })}
@@ -642,24 +650,24 @@ export default function DoorPanel() {
       )}
 
       {showSlideSection && (
-        <PanelSection title="Slide">
+        <PanelSection title={t('Slide')}>
           <div className="flex flex-col gap-2 px-1 pb-1">
             <div className="space-y-1">
               <span className="font-medium text-[10px] text-muted-foreground/80 uppercase tracking-wider">
-                {doorType === 'pocket' ? 'Pocket' : doorType === 'barn' ? 'Rail' : 'Panel'}
+                {doorType === 'pocket' ? t('Pocket') : doorType === 'barn' ? t('Rail') : t('Panel')}
               </span>
               <SegmentedControl
                 onChange={(v) => handleUpdate({ slideDirection: v })}
                 options={[
-                  { label: 'Left', value: 'left' },
-                  { label: 'Right', value: 'right' },
+                  { label: t('Left'), value: 'left' },
+                  { label: t('Right'), value: 'right' },
                 ]}
                 value={node.slideDirection ?? 'left'}
               />
             </div>
           </div>
           <SliderControl
-            label="Open"
+            label={t('Open')}
             max={100}
             min={0}
             onChange={(v) => handleUpdate({ operationState: v / 100 })}
@@ -673,9 +681,9 @@ export default function DoorPanel() {
       )}
 
       {showGarageSection && (
-        <PanelSection title="Garage">
+        <PanelSection title={t('Garage')}>
           <SliderControl
-            label="Open"
+            label={t('Open')}
             max={100}
             min={0}
             onChange={(v) => handleUpdate({ operationState: v / 100 })}
@@ -687,7 +695,7 @@ export default function DoorPanel() {
           />
           {isSectionalGarageDoor && (
             <SliderControl
-              label="Panels"
+              label={t('Panels')}
               max={8}
               min={3}
               onChange={(v) => handleUpdate({ garagePanelCount: Math.round(v) })}
@@ -700,9 +708,9 @@ export default function DoorPanel() {
         </PanelSection>
       )}
 
-      <PanelSection title="Dimensions">
+      <PanelSection title={t('Dimensions')}>
         <SliderControl
-          label="Width"
+          label={t('Width')}
           max={maxDoorWidth}
           min={0.5}
           onChange={(v) => handleUpdate({ width: v })}
@@ -713,7 +721,7 @@ export default function DoorPanel() {
           value={Math.round(node.width * 100) / 100}
         />
         <SliderControl
-          label="Height"
+          label={t('Height')}
           max={4}
           min={1.0}
           onChange={(v) =>
@@ -734,7 +742,7 @@ export default function DoorPanel() {
       </PanelSection>
 
       {showDoorShapeSection && (
-        <PanelSection title="Top Shape">
+        <PanelSection title={t('Top Shape')}>
           <div className="flex flex-col gap-2 px-1 pb-1">
             <SegmentedControl
               onChange={(v) =>
@@ -752,9 +760,9 @@ export default function DoorPanel() {
                 })
               }
               options={[
-                { label: 'Rect', value: 'rectangle' },
-                { label: 'Rounded', value: 'rounded' },
-                { label: 'Arch', value: 'arch' },
+                { label: t('Rect'), value: 'rectangle' },
+                { label: t('Rounded'), value: 'rounded' },
+                { label: t('Arch'), value: 'arch' },
               ]}
               value={doorShape}
             />
@@ -767,15 +775,15 @@ export default function DoorPanel() {
                     handleUpdate({ openingRadiusMode: v as DoorNode['openingRadiusMode'] })
                   }
                   options={[
-                    { label: 'All', value: 'all' },
-                    { label: 'Individual', value: 'individual' },
+                    { label: t('All'), value: 'all' },
+                    { label: t('Individual'), value: 'individual' },
                   ]}
                   value={openingRadiusMode}
                 />
               </div>
               {openingRadiusMode === 'all' ? (
                 <SliderControl
-                  label="Corner Radius"
+                  label={t('Corner Radius')}
                   max={maxRoundedRadius}
                   min={0}
                   onChange={(v) => previewDoorUpdate('cornerRadius', v)}
@@ -793,7 +801,7 @@ export default function DoorPanel() {
                   ].map(([label, index]) => (
                     <SliderControl
                       key={label}
-                      label={label}
+                      label={t(label as string)}
                       max={maxRoundedRadius}
                       min={0}
                       onChange={(v) => setOpeningTopRadius(index as number, v)}
@@ -807,7 +815,7 @@ export default function DoorPanel() {
                 </>
               )}
               <SliderControl
-                label="Reveal Radius"
+                label={t('Reveal Radius')}
                 max={0.08}
                 min={0}
                 onChange={(v) => previewDoorUpdate('openingRevealRadius', v)}
@@ -821,7 +829,7 @@ export default function DoorPanel() {
           )}
           {doorShape === 'arch' && (
             <SliderControl
-              label="Arch Height"
+              label={t('Arch Height')}
               max={node.height}
               min={0.05}
               onChange={(v) => handleUpdate({ archHeight: v })}
@@ -836,7 +844,7 @@ export default function DoorPanel() {
       )}
 
       {showOpeningShapeSection && (
-        <PanelSection title="Opening Shape">
+        <PanelSection title={t('Opening Shape')}>
           <div className="flex flex-col gap-2 px-1 pb-1">
             <SegmentedControl
               onChange={(v) =>
@@ -849,9 +857,9 @@ export default function DoorPanel() {
                 })
               }
               options={[
-                { label: 'Rect', value: 'rectangle' },
-                { label: 'Rounded', value: 'rounded' },
-                { label: 'Arch', value: 'arch' },
+                { label: t('Rect'), value: 'rectangle' },
+                { label: t('Rounded'), value: 'rounded' },
+                { label: t('Arch'), value: 'arch' },
               ]}
               value={openingShape}
             />
@@ -864,15 +872,15 @@ export default function DoorPanel() {
                     handleUpdate({ openingRadiusMode: v as DoorNode['openingRadiusMode'] })
                   }
                   options={[
-                    { label: 'All', value: 'all' },
-                    { label: 'Individual', value: 'individual' },
+                    { label: t('All'), value: 'all' },
+                    { label: t('Individual'), value: 'individual' },
                   ]}
                   value={openingRadiusMode}
                 />
               </div>
               {openingRadiusMode === 'all' ? (
                 <SliderControl
-                  label="Corner Radius"
+                  label={t('Corner Radius')}
                   max={maxRoundedRadius}
                   min={0}
                   onChange={(v) => previewDoorUpdate('cornerRadius', v)}
@@ -890,7 +898,7 @@ export default function DoorPanel() {
                   ].map(([label, index]) => (
                     <SliderControl
                       key={label}
-                      label={label}
+                      label={t(label as string)}
                       max={maxRoundedRadius}
                       min={0}
                       onChange={(v) => setOpeningTopRadius(index as number, v)}
@@ -904,7 +912,7 @@ export default function DoorPanel() {
                 </>
               )}
               <SliderControl
-                label="Reveal Radius"
+                label={t('Reveal Radius')}
                 max={0.08}
                 min={0}
                 onChange={(v) => previewDoorUpdate('openingRevealRadius', v)}
@@ -918,7 +926,7 @@ export default function DoorPanel() {
           )}
           {openingShape === 'arch' && (
             <SliderControl
-              label="Arch Height"
+              label={t('Arch Height')}
               max={node.height}
               min={0.05}
               onChange={(v) => handleUpdate({ archHeight: v })}
@@ -935,9 +943,9 @@ export default function DoorPanel() {
       {!isCutoutOnly && (
         <>
           {showFrameSection && (
-            <PanelSection title="Frame">
+            <PanelSection title={t('Frame')}>
               <SliderControl
-                label="Thickness"
+                label={t('Thickness')}
                 max={0.2}
                 min={0.01}
                 onChange={(v) => handleUpdate({ frameThickness: v })}
@@ -947,7 +955,7 @@ export default function DoorPanel() {
                 value={Math.round(node.frameThickness * 1000) / 1000}
               />
               <SliderControl
-                label="Depth"
+                label={t('Depth')}
                 max={0.3}
                 min={0.01}
                 onChange={(v) => handleUpdate({ frameDepth: v })}
@@ -960,9 +968,9 @@ export default function DoorPanel() {
           )}
 
           {showContentPaddingSection && (
-            <PanelSection title="Content Padding">
+            <PanelSection title={t('Content Padding')}>
               <SliderControl
-                label="Horizontal"
+                label={t('Horizontal')}
                 max={0.2}
                 min={0}
                 onChange={(v) => handleUpdate({ contentPadding: [v, node.contentPadding[1]] })}
@@ -972,7 +980,7 @@ export default function DoorPanel() {
                 value={Math.round(node.contentPadding[0] * 1000) / 1000}
               />
               <SliderControl
-                label="Vertical"
+                label={t('Vertical')}
                 max={0.2}
                 min={0}
                 onChange={(v) => handleUpdate({ contentPadding: [node.contentPadding[0], v] })}
@@ -985,18 +993,18 @@ export default function DoorPanel() {
           )}
 
           {showSwingSection && (
-            <PanelSection title="Swing">
+            <PanelSection title={t('Swing')}>
               <div className="flex flex-col gap-2 px-1 pb-1">
                 {supportsHingeSide && (
                   <div className="space-y-1">
                     <span className="font-medium text-[10px] text-muted-foreground/80 uppercase tracking-wider">
-                      Hinges Side
+                      {t('Hinges Side')}
                     </span>
                     <SegmentedControl
                       onChange={(v) => handleUpdate({ hingesSide: v })}
                       options={[
-                        { label: 'Left', value: 'left' },
-                        { label: 'Right', value: 'right' },
+                        { label: t('Left'), value: 'left' },
+                        { label: t('Right'), value: 'right' },
                       ]}
                       value={node.hingesSide}
                     />
@@ -1004,13 +1012,13 @@ export default function DoorPanel() {
                 )}
                 <div className="space-y-1">
                   <span className="font-medium text-[10px] text-muted-foreground/80 uppercase tracking-wider">
-                    Direction
+                    {t('Direction')}
                   </span>
                   <SegmentedControl
                     onChange={(v) => handleUpdate({ swingDirection: v })}
                     options={[
-                      { label: 'Inward', value: 'inward' },
-                      { label: 'Outward', value: 'outward' },
+                      { label: t('Inward'), value: 'inward' },
+                      { label: t('Outward'), value: 'outward' },
                     ]}
                     value={node.swingDirection}
                   />
@@ -1020,16 +1028,16 @@ export default function DoorPanel() {
           )}
 
           {showThresholdSection && (
-            <PanelSection title="Threshold">
+            <PanelSection title={t('Threshold')}>
               <ToggleControl
                 checked={node.threshold}
-                label="Enable Threshold"
+                label={t('Enable Threshold')}
                 onChange={(checked) => handleUpdate({ threshold: checked })}
               />
               {node.threshold && (
                 <div className="mt-1 flex flex-col gap-1">
                   <SliderControl
-                    label="Height"
+                    label={t('Height')}
                     max={0.1}
                     min={0.005}
                     onChange={(v) => handleUpdate({ thresholdHeight: v })}
@@ -1044,18 +1052,18 @@ export default function DoorPanel() {
           )}
 
           {showHandleSection && (
-            <PanelSection title="Handle">
+            <PanelSection title={t('Handle')}>
               {isSwingDoor && (
                 <ToggleControl
                   checked={node.handle}
-                  label="Enable Handle"
+                  label={t('Enable Handle')}
                   onChange={(checked) => handleUpdate({ handle: checked })}
                 />
               )}
               {(node.handle || !isSwingDoor) && (
                 <div className="mt-1 flex flex-col gap-1">
                   <SliderControl
-                    label="Height"
+                    label={t('Height')}
                     max={node.height - 0.1}
                     min={0.5}
                     onChange={(v) => handleUpdate({ handleHeight: v })}
@@ -1067,13 +1075,13 @@ export default function DoorPanel() {
                   {supportsHandleSide && (
                     <div className="space-y-1">
                       <span className="font-medium text-[10px] text-muted-foreground/80 uppercase tracking-wider">
-                        Handle Side
+                        {t('Handle Side')}
                       </span>
                       <SegmentedControl
                         onChange={(v) => handleUpdate({ handleSide: v })}
                         options={[
-                          { label: 'Left', value: 'left' },
-                          { label: 'Right', value: 'right' },
+                          { label: t('Left'), value: 'left' },
+                          { label: t('Right'), value: 'right' },
                         ]}
                         value={node.handleSide}
                       />
@@ -1085,21 +1093,21 @@ export default function DoorPanel() {
           )}
 
           {showHardwareSection && (
-            <PanelSection title="Hardware">
+            <PanelSection title={t('Hardware')}>
               <ToggleControl
                 checked={node.doorCloser}
-                label="Door Closer"
+                label={t('Door Closer')}
                 onChange={(checked) => handleUpdate({ doorCloser: checked })}
               />
               <ToggleControl
                 checked={node.panicBar}
-                label="Panic Bar"
+                label={t('Panic Bar')}
                 onChange={(checked) => handleUpdate({ panicBar: checked })}
               />
               {node.panicBar && (
                 <div className="mt-1 flex flex-col gap-1">
                   <SliderControl
-                    label="Bar Height"
+                    label={t('Bar Height')}
                     max={node.height - 0.1}
                     min={0.5}
                     onChange={(v) => handleUpdate({ panicBarHeight: v })}
@@ -1114,7 +1122,7 @@ export default function DoorPanel() {
           )}
 
           {showSegmentsSection && (
-            <PanelSection title="Segments">
+            <PanelSection title={t('Segments')}>
               {node.segments.map((seg, i) => {
                 const numCols = seg.columnRatios.length
                 const colSum = seg.columnRatios.reduce((a, b) => a + b, 0)
@@ -1122,26 +1130,28 @@ export default function DoorPanel() {
                 return (
                   <div className="mb-2 flex flex-col gap-1" key={i}>
                     <div className="flex items-center justify-between pb-1">
-                      <span className="font-medium text-white/80 text-xs">Segment {i + 1}</span>
+                      <span className="font-medium text-white/80 text-xs">
+                        {t('Segment {{count}}', { count: i + 1 })}
+                      </span>
                     </div>
 
                     <SegmentedControl
-                      onChange={(t) => {
+                      onChange={(segType) => {
                         const updated = node.segments.map((s, idx) =>
-                          idx === i ? { ...s, type: t } : s,
+                          idx === i ? { ...s, type: segType } : s,
                         )
                         handleUpdate({ segments: updated })
                       }}
                       options={[
-                        { label: 'Panel', value: 'panel' },
-                        { label: 'Glass', value: 'glass' },
-                        { label: 'Empty', value: 'empty' },
+                        { label: t('Panel'), value: 'panel' },
+                        { label: t('Glass'), value: 'glass' },
+                        { label: t('Empty'), value: 'empty' },
                       ]}
                       value={seg.type}
                     />
 
                     <SliderControl
-                      label="Height"
+                      label={t('Height')}
                       max={95}
                       min={5}
                       onChange={(v) => setSegmentHeightRatio(i, v / 100)}
@@ -1152,7 +1162,7 @@ export default function DoorPanel() {
                     />
 
                     <SliderControl
-                      label="Columns"
+                      label={t('Columns')}
                       max={8}
                       min={1}
                       onChange={(v) => {
@@ -1172,7 +1182,7 @@ export default function DoorPanel() {
                         {normCols.map((ratio, ci) => (
                           <SliderControl
                             key={`c-${ci}`}
-                            label={`C${ci + 1}`}
+                            label={t('C{{count}}', { count: ci + 1 })}
                             max={95}
                             min={5}
                             onChange={(v) => setSegmentColumnRatio(i, ci, v / 100)}
@@ -1183,7 +1193,7 @@ export default function DoorPanel() {
                           />
                         ))}
                         <SliderControl
-                          label="Divider"
+                          label={t('Divider')}
                           max={0.1}
                           min={0.005}
                           onChange={(v) => {
@@ -1203,7 +1213,7 @@ export default function DoorPanel() {
                     {seg.type === 'panel' && (
                       <div className="mt-1 border-border/50 border-t pt-1">
                         <SliderControl
-                          label="Inset"
+                          label={t('Inset')}
                           max={0.1}
                           min={0}
                           onChange={(v) => {
@@ -1218,7 +1228,7 @@ export default function DoorPanel() {
                           value={Math.round(seg.panelInset * 1000) / 1000}
                         />
                         <SliderControl
-                          label="Depth"
+                          label={t('Depth')}
                           max={0.1}
                           min={0}
                           onChange={(v) => {
@@ -1240,7 +1250,7 @@ export default function DoorPanel() {
 
               <div className="flex gap-1.5 px-1 pt-1">
                 <ActionButton
-                  label="+ Add Segment"
+                  label={t('+ Add Segment')}
                   onClick={() => {
                     const updated = [
                       ...node.segments,
@@ -1259,7 +1269,7 @@ export default function DoorPanel() {
                 {node.segments.length > 1 && (
                   <ActionButton
                     className="text-white/60 hover:text-white"
-                    label="- Remove"
+                    label={t('- Remove')}
                     onClick={() => handleUpdate({ segments: node.segments.slice(0, -1) })}
                   />
                 )}
@@ -1269,22 +1279,28 @@ export default function DoorPanel() {
         </>
       )}
 
-      <PanelSection title="Actions">
-        <ActionGroup>
-          <ActionButton icon={<Move className="h-3.5 w-3.5" />} label="Move" onClick={handleMove} />
-          <ActionButton
-            icon={<Copy className="h-3.5 w-3.5" />}
-            label="Duplicate"
-            onClick={handleDuplicate}
-          />
-          <ActionButton
-            className="hover:bg-red-500/20"
-            icon={<Trash2 className="h-3.5 w-3.5 text-red-400" />}
-            label="Delete"
-            onClick={handleDelete}
-          />
-        </ActionGroup>
-      </PanelSection>
+      {showActionsSection && (
+        <PanelSection title={t('Actions')}>
+          <ActionGroup>
+            <ActionButton
+              icon={<Move className="h-3.5 w-3.5" />}
+              label={t('Move')}
+              onClick={handleMove}
+            />
+            <ActionButton
+              icon={<Copy className="h-3.5 w-3.5" />}
+              label={t('Duplicate')}
+              onClick={handleDuplicate}
+            />
+            <ActionButton
+              className="hover:bg-red-500/20"
+              icon={<Trash2 className="h-3.5 w-3.5 text-red-400" />}
+              label={t('Delete')}
+              onClick={handleDelete}
+            />
+          </ActionGroup>
+        </PanelSection>
+      )}
     </PanelWrapper>
   )
 }

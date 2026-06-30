@@ -19,6 +19,7 @@ import {
 } from '@pascal-app/editor'
 import { useViewer } from '@pascal-app/viewer'
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DormerActionsSection } from './panel-actions-section'
 import { DormerPositionSection } from './panel-position-section'
 import { DormerWindowSection } from './panel-window-section'
@@ -42,6 +43,7 @@ const SECTION_OPTIONS: Array<{ label: string; value: DormerSection }> = [
 ]
 
 export default function DormerPanel() {
+  const { t } = useTranslation()
   const [section, setSection] = useState<DormerSection>('dormer')
   const selectedId = useViewer((s) => s.selection.selectedIds[0])
   const setSelection = useViewer((s) => s.setSelection)
@@ -162,7 +164,7 @@ export default function DormerPanel() {
       icon="/icons/roof.webp"
       onBack={node.roofSegmentId ? handleBack : undefined}
       onClose={handleClose}
-      title={node.name || 'Dormer'}
+      title={node.name || t('Dormer')}
       width={300}
     >
       <DormerPositionSection
@@ -174,7 +176,7 @@ export default function DormerPanel() {
         selectedId={selectedId}
       />
 
-      <PanelSection title="Section">
+      <PanelSection title={t('Section')}>
         <div className="grid grid-cols-3 gap-1.5 px-1 pt-1">
           {SECTION_OPTIONS.map((option) => {
             const isSelected = section === option.value
@@ -190,7 +192,7 @@ export default function DormerPanel() {
                 onClick={() => setSection(option.value)}
                 type="button"
               >
-                <span className="truncate font-medium">{option.label}</span>
+                <span className="truncate font-medium">{t(option.label)}</span>
               </button>
             )
           })}
@@ -199,9 +201,9 @@ export default function DormerPanel() {
 
       {section === 'dormer' && (
         <>
-          <PanelSection title="Dimensions">
+          <PanelSection title={t('Dimensions')}>
             <SliderControl
-              label="Width"
+              label={t('Width')}
               max={4}
               min={0.5}
               onChange={(v) => previewProp({ width: v })}
@@ -213,7 +215,7 @@ export default function DormerPanel() {
               value={Math.round(node.width * 100) / 100}
             />
             <SliderControl
-              label="Depth"
+              label={t('Depth')}
               max={5}
               min={0.5}
               onChange={(v) => previewProp({ depth: v })}
@@ -225,7 +227,7 @@ export default function DormerPanel() {
               value={Math.round(node.depth * 100) / 100}
             />
             <SliderControl
-              label="Wall Height"
+              label={t('Wall Height')}
               max={5}
               min={0}
               onChange={(v) => previewProp({ height: v })}
@@ -237,7 +239,7 @@ export default function DormerPanel() {
               value={Math.round(node.height * 100) / 100}
             />
             <SliderControl
-              label="Roof Height"
+              label={t('Roof Height')}
               max={3}
               min={0}
               onChange={(v) => previewProp({ roofHeight: v })}
@@ -250,7 +252,7 @@ export default function DormerPanel() {
             />
           </PanelSection>
 
-          <PanelSection title="Roof Type">
+          <PanelSection title={t('Roof Type')}>
             <div className="grid grid-cols-3 gap-1.5 px-1 pt-1">
               {ROOF_TYPE_OPTIONS.map((option) => {
                 const isSelected = node.roofType === option.value
@@ -266,7 +268,7 @@ export default function DormerPanel() {
                     onClick={() => handleUpdate({ roofType: option.value })}
                     type="button"
                   >
-                    <span className="truncate font-medium">{option.label}</span>
+                    <span className="truncate font-medium">{t(option.label)}</span>
                   </button>
                 )
               })}

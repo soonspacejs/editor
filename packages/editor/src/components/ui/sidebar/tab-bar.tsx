@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { triggerSFX } from './../../../lib/sfx-bus'
 import { cn } from './../../../lib/utils'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../primitives/tooltip'
@@ -21,6 +22,7 @@ interface TabBarProps {
 }
 
 export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
+  const { t } = useTranslation()
   return (
     <div className="flex h-10 shrink-0 items-center gap-0.5 border-border/50 border-b px-2">
       {tabs.map((tab) => {
@@ -41,7 +43,7 @@ export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
             onMouseEnter={() => triggerSFX('sfx:menu-hover')}
             type="button"
           >
-            {tab.label}
+            {t(tab.label)}
           </button>
         )
       })}
@@ -69,6 +71,7 @@ interface IconRailProps {
  * rendered as the first item at the top of the rail.
  */
 export function IconRail({ tabs, activeTab, collapsed, onIconClick, header }: IconRailProps) {
+  const { t } = useTranslation()
   return (
     <TooltipProvider delayDuration={0} disableHoverableContent>
       <div className="flex h-full w-14 shrink-0 flex-col items-center gap-1 border-border/50 border-r py-2">
@@ -103,7 +106,7 @@ export function IconRail({ tabs, activeTab, collapsed, onIconClick, header }: Ic
                   {tab.icon ?? tab.label.charAt(0)}
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right">{tab.label}</TooltipContent>
+              <TooltipContent side="right">{t(tab.label)}</TooltipContent>
             </Tooltip>
           )
         })}

@@ -1,7 +1,13 @@
+// Initialise the editor i18n instance (default Chinese, English fallback) as an
+// import side effect, before any editor component renders. Hosts switch language
+// via the re-exported `setEditorLanguage`.
+import './i18n'
+
 // Re-exports of the scene / viewer hooks so consumers composing their
 // own shells on top of `@pascal-app/editor` (community-app, embedders)
 // don't have to learn three separate package imports. The canonical
 // definitions still live in `@pascal-app/core` / `@pascal-app/viewer`.
+export { editorI18n, setEditorLanguage } from './i18n'
 export { useScene } from '@pascal-app/core'
 export { useViewer } from '@pascal-app/viewer'
 export type { EditorProps } from './components/editor'
@@ -205,6 +211,12 @@ export {
 } from './components/ui/primitives/dropdown-menu'
 export { useSidebarStore } from './components/ui/primitives/sidebar'
 export { Slider } from './components/ui/primitives/slider'
+export {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './components/ui/primitives/tooltip'
 export { SceneLoader } from './components/ui/scene-loader'
 export type { ExtraPanel } from './components/ui/sidebar/icon-rail'
 export { ItemsPanel } from './components/ui/sidebar/panels/items-panel'

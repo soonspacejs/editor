@@ -2,6 +2,7 @@
 
 import { ActionButton, ActionGroup, PanelSection } from '@pascal-app/editor'
 import { Copy, Move, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Move / Duplicate / Delete buttons at the bottom of the dormer
@@ -16,19 +17,20 @@ export function DormerActionsSection({
   onDuplicate: () => void
   onDelete: () => void
 }) {
+  const { t } = useTranslation()
   return (
-    <PanelSection title="Actions">
+    <PanelSection title={t('Actions')}>
       <ActionGroup>
-        <ActionButton icon={<Move className="h-3.5 w-3.5" />} label="Move" onClick={onMove} />
+        <ActionButton icon={<Move className="h-3.5 w-3.5" />} label={t('Move')} onClick={onMove} />
         <ActionButton
           icon={<Copy className="h-3.5 w-3.5" />}
-          label="Duplicate"
+          label={t('Duplicate')}
           onClick={onDuplicate}
         />
         <ActionButton
           className="hover:bg-red-500/20"
           icon={<Trash2 className="h-3.5 w-3.5 text-red-400" />}
-          label="Delete"
+          label={t('Delete')}
           onClick={onDelete}
         />
       </ActionGroup>

@@ -27,8 +27,10 @@ import {
 import { useViewer } from '@pascal-app/viewer'
 import { Spline } from 'lucide-react'
 import { useCallback, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export default function WallPanel() {
+  const { t } = useTranslation()
   const selectedId = useViewer((s) => s.selection.selectedIds[0])
   const unit = useViewer((s) => s.unit)
   const setSelection = useViewer((s) => s.setSelection)
@@ -134,17 +136,20 @@ export default function WallPanel() {
   const displayCurveOffset = metersToLinearUnit(curveOffset, unit)
   const displayMaxCurveOffset = metersToLinearUnit(maxCurveOffset, unit)
   const curveOffsetLimit = Math.max(0.01, maxCurveOffset)
+  // Simplified inspector — show only Length / Height / Thickness. The curve
+  // offset field and the curve action below are hidden.
+  const showCurveControls = false
 
   return (
     <PanelWrapper
       icon="/icons/wall.webp"
       onClose={handleClose}
-      title={node.name || 'Wall'}
+      title={node.name || t('Wall')}
       width={280}
     >
-      <PanelSection title="Dimensions">
+      <PanelSection title={t('Dimensions')}>
         <SliderControl
-          label="Length"
+          label={t('Length')}
           max={metersToLinearUnit(20, unit)}
           min={metersToLinearUnit(0.1, unit)}
           onChange={(value) =>
@@ -158,7 +163,7 @@ export default function WallPanel() {
           value={displayLength}
         />
         <SliderControl
-          label="Height"
+          label={t('Height')}
           max={metersToLinearUnit(6, unit)}
           min={metersToLinearUnit(0.1, unit)}
           onChange={(v) =>
@@ -172,7 +177,7 @@ export default function WallPanel() {
           value={Math.round(displayHeight * 100) / 100}
         />
         <SliderControl
-          label="Thickness"
+          label={t('Thickness')}
           max={metersToLinearUnit(1, unit)}
           min={metersToLinearUnit(0.05, unit)}
           onChange={(v) =>
@@ -185,9 +190,9 @@ export default function WallPanel() {
           unit={unitLabel}
           value={Math.round(displayThickness * 1000) / 1000}
         />
-        {!hasWallChildrenBlockingCurve && (
+        {showCurveControls && (
           <SliderControl
-            label="Curve"
+            label={t('Curve')}
             max={Math.max(metersToLinearUnit(0.01, unit), displayMaxCurveOffset)}
             min={-Math.max(metersToLinearUnit(0.01, unit), displayMaxCurveOffset)}
             onChange={(v) =>
@@ -209,12 +214,12 @@ export default function WallPanel() {
         )}
       </PanelSection>
 
-      {!hasWallChildrenBlockingCurve && (
-        <PanelSection title="Actions">
+      {showCurveControls && (
+        <PanelSection title={t('Actions')}>
           <ActionGroup>
             <ActionButton
               icon={<Spline className="h-3.5 w-3.5" />}
-              label="Curve"
+              label={t('Curve')}
               onClick={handleCurve}
             />
           </ActionGroup>

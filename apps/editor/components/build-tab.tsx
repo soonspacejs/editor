@@ -5,6 +5,7 @@ import { MaterialPaintPanel, triggerSFX, useEditor } from '@pascal-app/editor'
 import { useLiquidLineToolOptions } from '@pascal-app/nodes'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Tooltip,
   TooltipContent,
@@ -161,6 +162,7 @@ const MEP_TOOL_KINDS = new Set<string>([
 ])
 
 export function BuildTab() {
+  const { t } = useTranslation()
   const activeTool = useEditor((s) => s.tool)
   const mode = useEditor((s) => s.mode)
   const follow = useLiquidLineToolOptions((s) => s.follow)
@@ -276,7 +278,7 @@ export function BuildTab() {
                     type="button"
                   >
                     <Image
-                      alt={type.label}
+                      alt={t(type.label)}
                       className="size-full object-contain transition-transform duration-200 group-hover:scale-110"
                       height={48}
                       src={type.iconSrc}
@@ -285,7 +287,7 @@ export function BuildTab() {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent className="pointer-events-none" side="top">
-                  {type.label}
+                  {t(type.label)}
                 </TooltipContent>
               </Tooltip>
             )
@@ -301,7 +303,7 @@ export function BuildTab() {
         (activeTool === 'roof' || isRoofFeatureActive) &&
         roofFeatures.length > 0 ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-          <div className="px-0.5 pt-1 font-medium text-muted-foreground text-xs">Features</div>
+          <div className="px-0.5 pt-1 font-medium text-muted-foreground text-xs">{t('Features')}</div>
           <TooltipProvider delayDuration={0} disableHoverableContent>
             <div
               className="grid gap-1.5"
@@ -327,7 +329,7 @@ export function BuildTab() {
                         type="button"
                       >
                         <Image
-                          alt={feature.label}
+                          alt={t(feature.label)}
                           className="size-full object-contain transition-transform duration-200 group-hover:scale-110"
                           height={48}
                           src={feature.iconSrc}
@@ -336,7 +338,7 @@ export function BuildTab() {
                       </button>
                     </TooltipTrigger>
                     <TooltipContent className="pointer-events-none" side="top">
-                      {feature.label}
+                      {t(feature.label)}
                     </TooltipContent>
                   </Tooltip>
                 )
@@ -346,7 +348,7 @@ export function BuildTab() {
         </div>
       ) : isMepActive ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-          <div className="px-0.5 pt-1 font-medium text-muted-foreground text-xs">MEP</div>
+          <div className="px-0.5 pt-1 font-medium text-muted-foreground text-xs">{t('MEP')}</div>
           <TooltipProvider delayDuration={0} disableHoverableContent>
             <div
               className="grid gap-1.5 px-0.5"
@@ -372,7 +374,7 @@ export function BuildTab() {
                         type="button"
                       >
                         <Image
-                          alt={item.label}
+                          alt={t(item.label)}
                           className="size-full object-contain transition-transform duration-200 group-hover:scale-110"
                           height={48}
                           src={item.iconSrc}
@@ -381,7 +383,7 @@ export function BuildTab() {
                       </button>
                     </TooltipTrigger>
                     <TooltipContent className="pointer-events-none" side="top">
-                      {item.label}
+                      {t(item.label)}
                     </TooltipContent>
                   </Tooltip>
                 )
@@ -391,7 +393,7 @@ export function BuildTab() {
 
           {ductContext ? (
             <div className="flex flex-col gap-1.5">
-              <span className="text-muted-foreground text-xs">Duct</span>
+              <span className="text-muted-foreground text-xs">{t('Duct')}</span>
               <button
                 className={cn(
                   'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
@@ -414,14 +416,14 @@ export function BuildTab() {
                   src="/icons/duct-fitting.webp"
                   width={16}
                 />
-                Add Fitting
+                {t('Add Fitting')}
               </button>
             </div>
           ) : null}
 
           {pipeContext ? (
             <div className="flex flex-col gap-1.5">
-              <span className="text-muted-foreground text-xs">DWV Pipe</span>
+              <span className="text-muted-foreground text-xs">{t('DWV Pipe')}</span>
               <button
                 className={cn(
                   'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
@@ -444,7 +446,7 @@ export function BuildTab() {
                   src="/icons/duct-fitting.webp"
                   width={16}
                 />
-                Add Fitting
+                {t('Add Fitting')}
               </button>
               <button
                 className={cn(
@@ -468,14 +470,14 @@ export function BuildTab() {
                   src="/icons/dwv-pipes.png"
                   width={16}
                 />
-                Add Trap
+                {t('Add Trap')}
               </button>
             </div>
           ) : null}
 
           {liquidLineContext ? (
             <div className="flex flex-col gap-1.5">
-              <span className="text-muted-foreground text-xs">Liquid Line</span>
+              <span className="text-muted-foreground text-xs">{t('Liquid Line')}</span>
               <button
                 className={cn(
                   'flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200',
@@ -488,13 +490,13 @@ export function BuildTab() {
                 onMouseEnter={() => triggerSFX('sfx:menu-hover')}
                 type="button"
               >
-                <span>Follow lineset</span>
-                <span className="text-muted-foreground text-xs">{follow ? 'On' : 'Off'}</span>
+                <span>{t('Follow lineset')}</span>
+                <span className="text-muted-foreground text-xs">{follow ? t('On') : t('Off')}</span>
               </button>
               <span className="px-1 text-[11px] text-muted-foreground">
                 {follow
-                  ? 'Click a lineset to lay the line beside it.'
-                  : 'Trace a line alongside an existing lineset (F).'}
+                  ? t('Click a lineset to lay the line beside it.')
+                  : t('Trace a line alongside an existing lineset (F).')}
               </span>
             </div>
           ) : null}

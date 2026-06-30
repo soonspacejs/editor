@@ -23,6 +23,7 @@ import {
 import { useViewer } from '@pascal-app/viewer'
 import { Copy, Move, Trash2 } from 'lucide-react'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const SEGMENT_TYPE_OPTIONS: { label: string; value: StairSegmentType }[] = [
   { label: 'Flight', value: 'stair' },
@@ -36,6 +37,7 @@ const ATTACHMENT_SIDE_OPTIONS: { label: string; value: AttachmentSide }[] = [
 ]
 
 export default function StairSegmentPanel() {
+  const { t } = useTranslation()
   const selectedId = useViewer((s) => s.selection.selectedIds[0])
   const setSelection = useViewer((s) => s.setSelection)
   const updateNode = useScene((s) => s.updateNode)
@@ -124,10 +126,10 @@ export default function StairSegmentPanel() {
       icon="/icons/stairs.webp"
       onBack={handleBack}
       onClose={handleClose}
-      title={node.name || 'Stair Segment'}
+      title={node.name || t('Stair Segment')}
       width={300}
     >
-      <PanelSection title="Type">
+      <PanelSection title={t('Type')}>
         <SegmentedControl
           onChange={(v) => {
             const updates: Partial<StairSegmentNode> = { segmentType: v }
@@ -148,7 +150,7 @@ export default function StairSegmentPanel() {
       </PanelSection>
 
       {!isFirstSegment && (
-        <PanelSection title="Attachment">
+        <PanelSection title={t('Attachment')}>
           <SegmentedControl
             onChange={(v) => handleUpdate({ attachmentSide: v })}
             options={ATTACHMENT_SIDE_OPTIONS}
@@ -157,9 +159,9 @@ export default function StairSegmentPanel() {
         </PanelSection>
       )}
 
-      <PanelSection title="Dimensions">
+      <PanelSection title={t('Dimensions')}>
         <SliderControl
-          label="Width"
+          label={t('Width')}
           max={5}
           min={0.5}
           onChange={(v) => handleUpdate({ width: v })}
@@ -169,7 +171,7 @@ export default function StairSegmentPanel() {
           value={Math.round(node.width * 100) / 100}
         />
         <SliderControl
-          label="Length"
+          label={t('Length')}
           max={10}
           min={0.5}
           onChange={(v) => handleUpdate({ length: v })}
@@ -181,7 +183,7 @@ export default function StairSegmentPanel() {
         {node.segmentType === 'stair' && (
           <>
             <SliderControl
-              label="Height"
+              label={t('Height')}
               max={10}
               min={0.5}
               onChange={(v) => handleUpdate({ height: v })}
@@ -191,7 +193,7 @@ export default function StairSegmentPanel() {
               value={Math.round(node.height * 100) / 100}
             />
             <SliderControl
-              label="Steps"
+              label={t('Steps')}
               max={30}
               min={2}
               onChange={(v) => handleUpdate({ stepCount: Math.round(v) })}
@@ -204,16 +206,16 @@ export default function StairSegmentPanel() {
         )}
       </PanelSection>
 
-      <PanelSection title="Structure">
+      <PanelSection title={t('Structure')}>
         <div className="space-y-3">
           <ToggleControl
             checked={node.fillToFloor}
-            label="Fill to floor"
+            label={t('Fill to floor')}
             onChange={(checked) => handleUpdate({ fillToFloor: checked })}
           />
           {!node.fillToFloor && (
             <SliderControl
-              label="Thickness"
+              label={t('Thickness')}
               max={1}
               min={0.05}
               onChange={(v) => handleUpdate({ thickness: v })}
@@ -226,9 +228,9 @@ export default function StairSegmentPanel() {
         </div>
       </PanelSection>
 
-      <PanelSection title="Position">
+      <PanelSection title={t('Position')}>
         <SliderControl
-          label="X"
+          label={t('X')}
           max={50}
           min={-50}
           onChange={(v) => {
@@ -242,7 +244,7 @@ export default function StairSegmentPanel() {
           value={Math.round(node.position[0] * 100) / 100}
         />
         <SliderControl
-          label="Y"
+          label={t('Y')}
           max={50}
           min={-50}
           onChange={(v) => {
@@ -256,7 +258,7 @@ export default function StairSegmentPanel() {
           value={Math.round(node.position[1] * 100) / 100}
         />
         <SliderControl
-          label="Z"
+          label={t('Z')}
           max={50}
           min={-50}
           onChange={(v) => {
@@ -270,7 +272,7 @@ export default function StairSegmentPanel() {
           value={Math.round(node.position[2] * 100) / 100}
         />
         <SliderControl
-          label="Rotation"
+          label={t('Rotation')}
           max={180}
           min={-180}
           onChange={(degrees) => {
@@ -299,18 +301,22 @@ export default function StairSegmentPanel() {
         </div>
       </PanelSection>
 
-      <PanelSection title="Actions">
+      <PanelSection title={t('Actions')}>
         <ActionGroup>
-          <ActionButton icon={<Move className="h-3.5 w-3.5" />} label="Move" onClick={handleMove} />
+          <ActionButton
+            icon={<Move className="h-3.5 w-3.5" />}
+            label={t('Move')}
+            onClick={handleMove}
+          />
           <ActionButton
             icon={<Copy className="h-3.5 w-3.5" />}
-            label="Duplicate"
+            label={t('Duplicate')}
             onClick={handleDuplicate}
           />
           <ActionButton
             className="hover:bg-red-500/20"
             icon={<Trash2 className="h-3.5 w-3.5 text-red-400" />}
-            label="Delete"
+            label={t('Delete')}
             onClick={handleDelete}
           />
         </ActionGroup>

@@ -11,6 +11,7 @@ import {
 import { useViewer } from '@pascal-app/viewer'
 import { Check, ChevronDown, Eye, EyeOff, Layers2, Plus, Trash2, Waypoints } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
 import { getLevelDisplayName } from '@pascal-app/core'
 import { createLocalGuideImage } from '../../../lib/local-guide-image'
@@ -83,6 +84,7 @@ function useLowerReferenceLevels(): LevelNode[] {
 // ── Shared upload button for dropdowns ──────────────────────────────────────
 
 function UploadButton({ onError }: { onError: (message: string | null) => void }) {
+  const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const levelId = useViewer((s) => s.selection.levelId)
   const setSelection = useViewer((s) => s.setSelection)
@@ -100,7 +102,7 @@ function UploadButton({ onError }: { onError: (message: string | null) => void }
       onError(null)
 
       if (file.size > MAX_FILE_SIZE) {
-        onError('File is too large. Maximum size is 200 MB.')
+        onError(t('File is too large. Maximum size is 200 MB.'))
         return
       }
 
@@ -108,7 +110,7 @@ function UploadButton({ onError }: { onError: (message: string | null) => void }
         file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf')
       const isImage = file.type.startsWith('image/')
       if (!(isScan || isImage)) {
-        onError('Upload a .glb/.gltf scan or an image.')
+        onError(t('Upload a .glb/.gltf scan or an image.'))
         return
       }
 
@@ -120,7 +122,7 @@ function UploadButton({ onError }: { onError: (message: string | null) => void }
           setSelectedReferenceId(guide.id)
           setSelection({ selectedIds: [], zoneId: null })
         } catch {
-          onError('Could not add that guide image.')
+          onError(t('Could not add that guide image.'))
         } finally {
           setIsAddingGuide(false)
         }
@@ -129,26 +131,26 @@ function UploadButton({ onError }: { onError: (message: string | null) => void }
 
       const { uploadHandler } = useUploadStore.getState()
       if (!uploadHandler) {
-        onError('Scan upload is unavailable.')
+        onError(t('Scan upload is unavailable.'))
         return
       }
 
       const projectId = window.location.pathname.split('/editor/')[1]?.split('/')[0]
       if (!projectId) {
-        onError('Open a project before uploading a scan.')
+        onError(t('Open a project before uploading a scan.'))
         return
       }
 
       useUploadStore.getState().clearUpload(levelId)
       uploadHandler(projectId, levelId, file, 'scan')
     },
-    [createNode, levelId, onError, setSelectedReferenceId, setSelection, setShowGuides],
+    [createNode, levelId, onError, setSelectedReferenceId, setSelection, setShowGuides, t],
   )
 
   return (
     <>
       <button
-        aria-label="Upload scan or guide image"
+        aria-label={t('Upload scan or guide image')}
         className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border/40 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
         disabled={isAddingGuide}
         onClick={() => fileInputRef.current?.click()}
@@ -170,6 +172,7 @@ function UploadButton({ onError }: { onError: (message: string | null) => void }
 // ── Guides toggle + dropdown ────────────────────────────────────────────────
 
 function GuidesControl() {
+  const { t } = useTranslation()
   const showGuides = useViewer((state) => state.showGuides)
   const setShowGuides = useViewer((state) => state.setShowGuides)
   const setSelection = useViewer((state) => state.setSelection)
@@ -210,14 +213,14 @@ function GuidesControl() {
               ? 'bg-white/15'
               : 'opacity-60 grayscale hover:bg-white/5 hover:opacity-100 hover:grayscale-0',
           )}
-          label={`Guides: ${showGuides ? 'Visible' : 'Hidden'}`}
+          label={`${t('Guides')}: ${showGuides ? t('Visible') : t('Hidden')}`}
           onClick={() => setShowGuides(!showGuides)}
           size="icon"
           variant="ghost"
         >
           <div className="relative">
             <img
-              alt="Guides"
+              alt={t('Guides')}
               className="h-[28px] w-[28px] object-contain"
               src="/icons/floorplan.webp"
             />
@@ -231,7 +234,7 @@ function GuidesControl() {
         <PopoverTrigger asChild>
           <button
             aria-expanded={isOpen}
-            aria-label="Guide image settings"
+            aria-label={t('Guide image settings')}
             className={cn(
               'flex h-11 w-6 items-center justify-center rounded-r-lg transition-colors',
               showGuides
@@ -261,10 +264,10 @@ function GuidesControl() {
               <img alt="" className="h-4 w-4 object-contain" src="/icons/floorplan.webp" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-foreground text-sm">Guide images</p>
+              <p className="font-medium text-foreground text-sm">{t('Guide images')}</p>
               {hasGuides && (
                 <p className="text-muted-foreground text-xs">
-                  {guides.length} guide image{guides.length !== 1 ? 's' : ''} on this level
+                  {t('{{count}} guide images on this level', { count: guides.length })}
                 </p>
               )}
             </div>
@@ -301,14 +304,14 @@ function GuidesControl() {
                         src="/icons/floorplan.webp"
                       />
                       <p className="truncate font-medium text-foreground text-sm">
-                        {guide.name || `Guide image ${index + 1}`}
+                        {guide.name || t('Guide image {{number}}', { number: index + 1 })}
                       </p>
                       {selectedReferenceId === guide.id && (
                         <Check className="ml-auto h-3.5 w-3.5 shrink-0 text-foreground/80" />
                       )}
                     </button>
                     <button
-                      aria-label="Delete guide image"
+                      aria-label={t('Delete guide image')}
                       className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover/item:opacity-100"
                       onClick={(event) => {
                         event.stopPropagation()
@@ -323,7 +326,7 @@ function GuidesControl() {
                     </button>
                   </div>
                   <SliderControl
-                    label="Opacity"
+                    label={t('Opacity')}
                     max={100}
                     min={0}
                     onChange={(value) => handleOpacityChange(guide.id, value)}
@@ -337,7 +340,7 @@ function GuidesControl() {
             </div>
           ) : (
             <div className="rounded-xl border border-border/45 border-dashed bg-background/60 px-3 py-4 text-muted-foreground text-sm">
-              {REFERENCES_EMPTY_TEXT}
+              {t(REFERENCES_EMPTY_TEXT)}
             </div>
           )}
         </div>
@@ -349,6 +352,7 @@ function GuidesControl() {
 // ── Scans toggle + dropdown ─────────────────────────────────────────────────
 
 function ScansControl() {
+  const { t } = useTranslation()
   const showScans = useViewer((state) => state.showScans)
   const setShowScans = useViewer((state) => state.setShowScans)
   const setSelection = useViewer((state) => state.setSelection)
@@ -389,13 +393,13 @@ function ScansControl() {
               ? 'bg-white/15'
               : 'opacity-60 grayscale hover:bg-white/5 hover:opacity-100 hover:grayscale-0',
           )}
-          label={`Scans: ${showScans ? 'Visible' : 'Hidden'}`}
+          label={`${t('Scans')}: ${showScans ? t('Visible') : t('Hidden')}`}
           onClick={() => setShowScans(!showScans)}
           size="icon"
           variant="ghost"
         >
           <div className="relative">
-            <img alt="Scans" className="h-[28px] w-[28px] object-contain" src="/icons/mesh.webp" />
+            <img alt={t('Scans')} className="h-[28px] w-[28px] object-contain" src="/icons/mesh.webp" />
             <span className="absolute -right-1.5 -bottom-1 min-w-[14px] rounded-full bg-white/20 px-[3px] text-center font-medium text-[9px] text-white/70 leading-[14px]">
               {scans.length}
             </span>
@@ -406,7 +410,7 @@ function ScansControl() {
         <PopoverTrigger asChild>
           <button
             aria-expanded={isOpen}
-            aria-label="Scan settings"
+            aria-label={t('Scan settings')}
             className={cn(
               'flex h-11 w-6 items-center justify-center rounded-r-lg transition-colors',
               showScans
@@ -436,10 +440,10 @@ function ScansControl() {
               <img alt="" className="h-4 w-4 object-contain" src="/icons/mesh.webp" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-foreground text-sm">Scans</p>
+              <p className="font-medium text-foreground text-sm">{t('Scans')}</p>
               {hasScans && (
                 <p className="text-muted-foreground text-xs">
-                  {scans.length} scan{scans.length !== 1 ? 's' : ''} on this level
+                  {t('{{count}} scans on this level', { count: scans.length })}
                 </p>
               )}
             </div>
@@ -476,14 +480,14 @@ function ScansControl() {
                         src="/icons/mesh.webp"
                       />
                       <p className="truncate font-medium text-foreground text-sm">
-                        {scan.name || `Scan ${index + 1}`}
+                        {scan.name || t('Scan {{number}}', { number: index + 1 })}
                       </p>
                       {selectedReferenceId === scan.id && (
                         <Check className="ml-auto h-3.5 w-3.5 shrink-0 text-foreground/80" />
                       )}
                     </button>
                     <button
-                      aria-label="Delete scan"
+                      aria-label={t('Delete scan')}
                       className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover/item:opacity-100"
                       onClick={(event) => {
                         event.stopPropagation()
@@ -498,7 +502,7 @@ function ScansControl() {
                     </button>
                   </div>
                   <SliderControl
-                    label="Opacity"
+                    label={t('Opacity')}
                     max={100}
                     min={0}
                     onChange={(value) => handleOpacityChange(scan.id, value)}
@@ -512,7 +516,7 @@ function ScansControl() {
             </div>
           ) : (
             <div className="rounded-xl border border-border/45 border-dashed bg-background/60 px-3 py-4 text-muted-foreground text-sm">
-              {REFERENCES_EMPTY_TEXT}
+              {t(REFERENCES_EMPTY_TEXT)}
             </div>
           )}
         </div>
@@ -545,6 +549,7 @@ function ReferenceListSection({
   setShow: (show: boolean) => void
   onError: (message: string | null) => void
 }) {
+  const { t } = useTranslation()
   const setSelection = useViewer((state) => state.setSelection)
   const updateNode = useScene((state) => state.updateNode)
   const deleteNode = useScene((state) => state.deleteNode)
@@ -568,7 +573,7 @@ function ReferenceListSection({
           <img alt="" className="h-4 w-4 object-contain" src={iconSrc} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-medium text-foreground text-sm">{title}</p>
+          <p className="font-medium text-foreground text-sm">{t(title)}</p>
           {hasItems && (
             <p className="text-muted-foreground text-xs">
               {nodes.length} {noun}
@@ -633,7 +638,7 @@ function ReferenceListSection({
                 </button>
               </div>
               <SliderControl
-                label="Opacity"
+                label={t('Opacity')}
                 max={100}
                 min={0}
                 onChange={(value) =>
@@ -649,7 +654,7 @@ function ReferenceListSection({
         </div>
       ) : (
         <div className="rounded-xl border border-border/45 border-dashed bg-background/60 px-3 py-3 text-muted-foreground text-sm">
-          {emptyText}
+          {t(emptyText)}
         </div>
       )}
     </div>
@@ -657,6 +662,7 @@ function ReferenceListSection({
 }
 
 function ReferencesControl() {
+  const { t } = useTranslation()
   const showScans = useViewer((state) => state.showScans)
   const setShowScans = useViewer((state) => state.setShowScans)
   const showGuides = useViewer((state) => state.showGuides)
@@ -685,14 +691,14 @@ function ReferencesControl() {
               ? 'bg-white/15'
               : 'opacity-60 grayscale hover:bg-white/5 hover:opacity-100 hover:grayscale-0',
           )}
-          label={`References: ${anyVisible ? 'Visible' : 'Hidden'}`}
+          label={`${t('References')}: ${anyVisible ? t('Visible') : t('Hidden')}`}
           onClick={toggleAll}
           size="icon"
           variant="ghost"
         >
           <div className="relative">
             <img
-              alt="References"
+              alt={t('References')}
               className="h-[28px] w-[28px] object-contain"
               src="/icons/floorplan.webp"
             />
@@ -705,7 +711,7 @@ function ReferencesControl() {
         <PopoverTrigger asChild>
           <button
             aria-expanded={isOpen}
-            aria-label="Reference settings"
+            aria-label={t('Reference settings')}
             className={cn(
               'flex h-11 w-6 items-center justify-center rounded-r-lg transition-colors',
               anyVisible
@@ -765,6 +771,7 @@ function ReferencesControl() {
 // ── Reference floor control ────────────────────────────────────────────────────────────────────
 
 function ReferenceFloorControl() {
+  const { t } = useTranslation()
   const showReferenceFloor = useEditor((state) => state.showReferenceFloor)
   const toggleReferenceFloor = useEditor((state) => state.toggleReferenceFloor)
   const referenceFloorOffset = useEditor((state) => state.referenceFloorOffset)
@@ -790,8 +797,8 @@ function ReferenceFloorControl() {
           disabled={!hasLowerLevels}
           label={
             selectedLevelName && showReferenceFloor
-              ? `Reference floor: ${selectedLevelName}`
-              : 'Reference floor'
+              ? `${t('Reference floor')}: ${selectedLevelName}`
+              : t('Reference floor')
           }
           onClick={() => {
             if (hasLowerLevels) toggleReferenceFloor()
@@ -810,7 +817,7 @@ function ReferenceFloorControl() {
         <PopoverTrigger asChild>
           <button
             aria-expanded={isOpen}
-            aria-label="Reference floor settings"
+            aria-label={t('Reference floor settings')}
             className={cn(
               'flex h-11 w-6 items-center justify-center rounded-r-lg transition-colors',
               showReferenceFloor && selectedLevel
@@ -841,13 +848,13 @@ function ReferenceFloorControl() {
               <Layers2 className="h-4 w-4" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-foreground text-sm">Reference floor</p>
+              <p className="font-medium text-foreground text-sm">{t('Reference floor')}</p>
               {selectedLevelName && (
                 <p className="truncate text-muted-foreground text-xs">{selectedLevelName}</p>
               )}
             </div>
             <button
-              aria-label={showReferenceFloor ? 'Hide reference floor' : 'Show reference floor'}
+              aria-label={showReferenceFloor ? t('Hide reference floor') : t('Show reference floor')}
               className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border/40 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
               disabled={!hasLowerLevels}
               onClick={toggleReferenceFloor}
@@ -891,14 +898,16 @@ function ReferenceFloorControl() {
                         )}
                       />
                       <span className="min-w-0 flex-1 truncate">{levelName}</span>
-                      <span className="text-[10px] text-muted-foreground">{index + 1} below</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {t('{{count}} below', { count: index + 1 })}
+                      </span>
                     </button>
                   )
                 })}
               </div>
 
               <SliderControl
-                label="Opacity"
+                label={t('Opacity')}
                 max={0.8}
                 min={0.1}
                 onChange={setReferenceFloorOpacity}
@@ -909,7 +918,7 @@ function ReferenceFloorControl() {
             </>
           ) : (
             <div className="rounded-xl border border-border/45 border-dashed bg-background/60 px-3 py-4 text-muted-foreground text-sm">
-              No lower floor available.
+              {t('No lower floor available.')}
             </div>
           )}
         </div>
@@ -921,6 +930,7 @@ function ReferenceFloorControl() {
 // ── Riser diagram control ────────────────────────────────────────────────────
 
 function RiserControl() {
+  const { t } = useTranslation()
   const isRiserOpen = useEditor((state) => state.isRiserOpen)
   const toggleRiserOpen = useEditor((state) => state.toggleRiserOpen)
 
@@ -931,7 +941,7 @@ function RiserControl() {
           ? 'bg-white/15'
           : 'opacity-60 grayscale hover:bg-white/5 hover:opacity-100 hover:grayscale-0',
       )}
-      label="Riser diagram"
+      label={t('Riser diagram')}
       onClick={toggleRiserOpen}
       size="icon"
       variant="ghost"

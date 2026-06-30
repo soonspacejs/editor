@@ -4,6 +4,7 @@ import { type AnyNodeId, buildRiserDiagram, useScene } from '@pascal-app/core'
 import { useViewer } from '@pascal-app/viewer'
 import { X } from 'lucide-react'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import useEditor from '../../store/use-editor'
 
 const WASTE_COLOR = '#0ea5e9'
@@ -31,6 +32,7 @@ export function RiserDiagramPanel() {
 }
 
 function RiserDiagramContent() {
+  const { t } = useTranslation()
   const setRiserOpen = useEditor((s) => s.setRiserOpen)
   const nodes = useScene((s) => s.nodes)
   const selectedIds = useViewer((s) => s.selection.selectedIds)
@@ -48,8 +50,8 @@ function RiserDiagramContent() {
     <div className="dark pointer-events-auto absolute top-4 right-4 z-30 flex max-h-[80vh] w-[26rem] flex-col overflow-hidden rounded-2xl border border-border/40 bg-background/95 text-foreground shadow-lg backdrop-blur-xl">
       <div className="flex items-center justify-between border-border/40 border-b px-4 py-2.5">
         <div className="flex flex-col">
-          <span className="font-medium text-sm">Riser Diagram</span>
-          <span className="text-muted-foreground text-xs">DWV plumbing isometric</span>
+          <span className="font-medium text-sm">{t('Riser Diagram')}</span>
+          <span className="text-muted-foreground text-xs">{t('DWV plumbing isometric')}</span>
         </div>
         <button
           className="flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-white/10"
@@ -61,11 +63,11 @@ function RiserDiagramContent() {
 
       <div className="flex items-center gap-3 border-border/40 border-b px-4 py-2 text-xs">
         <span className="flex items-center gap-1.5">
-          <span className="h-0.5 w-4" style={{ background: WASTE_COLOR }} /> Waste
+          <span className="h-0.5 w-4" style={{ background: WASTE_COLOR }} /> {t('Waste')}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="h-0 w-4 border-t-2 border-dashed" style={{ borderColor: VENT_COLOR }} />{' '}
-          Vent
+          {t('Vent')}
         </span>
       </div>
 
@@ -74,7 +76,7 @@ function RiserDiagramContent() {
           <svg
             height={Math.max(height, 120)}
             role="img"
-            aria-label="DWV riser diagram"
+            aria-label={t('DWV riser diagram')}
             viewBox={`0 0 ${Math.max(width, 200)} ${Math.max(height, 120)}`}
             width="100%"
           >
@@ -128,7 +130,7 @@ function RiserDiagramContent() {
           </svg>
         ) : (
           <div className="flex h-32 items-center justify-center px-6 text-center text-muted-foreground text-sm">
-            No drain, waste, or vent pipes yet. Draw plumbing to see the riser diagram.
+            {t('No drain, waste, or vent pipes yet. Draw plumbing to see the riser diagram.')}
           </div>
         )}
       </div>

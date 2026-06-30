@@ -1,4 +1,5 @@
 import type { AnyNode } from '@pascal-app/core'
+import { localizeNodeName } from '../../../lib/node-name-i18n'
 
 export type NodeDisplay = {
   icon: string
@@ -30,11 +31,11 @@ export function getNodeDisplay(node: AnyNode | null | undefined): NodeDisplay {
   if (node.type === 'item') {
     return {
       icon: node.asset?.thumbnail || fallback.icon,
-      label: node.name || node.asset?.name || fallback.label,
+      label: localizeNodeName(node.name || node.asset?.name || fallback.label),
     }
   }
   return {
     icon: fallback.icon,
-    label: node.name || fallback.label,
+    label: localizeNodeName(node.name || fallback.label),
   }
 }

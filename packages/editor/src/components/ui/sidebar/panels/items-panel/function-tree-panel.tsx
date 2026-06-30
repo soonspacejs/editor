@@ -4,6 +4,7 @@ import type { AssetInput } from '@pascal-app/core'
 import { Root as TooltipRoot } from '@radix-ui/react-tooltip'
 import NextImage from 'next/image'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { triggerSFX } from '../../../../../lib/sfx-bus'
 import { cn } from '../../../../../lib/utils'
 import { ItemCatalog } from '../../../item-catalog/item-catalog'
@@ -64,6 +65,7 @@ export function FunctionTreePanel({
   leadingTile?: React.ReactNode
   emptyState?: React.ReactNode
 }) {
+  const { t } = useTranslation()
   const [activeRootSlug, setActiveRootSlug] = useState<string | null>(
     functionTree[0]?.slug ?? null,
   )
@@ -173,7 +175,7 @@ export function FunctionTreePanel({
               setSearch(e.target.value)
               onSearchChange?.(e.target.value)
             }}
-            placeholder="Search..."
+            placeholder={t('Search...')}
             type="text"
             value={search}
           />
@@ -192,7 +194,7 @@ export function FunctionTreePanel({
                   onClick={() => setActiveSource(isActive ? null : chip.id)}
                   type="button"
                 >
-                  {chip.label}
+                  {t(chip.label)}
                 </button>
               )
             })}
@@ -212,7 +214,7 @@ export function FunctionTreePanel({
               onClick={() => setActiveChildSlug(null)}
               type="button"
             >
-              All
+              {t('All')}
             </button>
             {activeRoot.children.map((child) => {
               const isActive = activeChildSlug === child.slug
@@ -245,7 +247,7 @@ export function FunctionTreePanel({
         ) : isServerSearch && search && searchResults?.length === 0 ? (
           (emptyState ?? (
             <div className="flex h-full items-center justify-center text-muted-foreground text-xs">
-              No results for &ldquo;{search}&rdquo;
+              {t('No results for “{{query}}”', { query: search })}
             </div>
           ))
         ) : (

@@ -3,6 +3,7 @@
 import { Icon } from '@iconify/react'
 import { Copy, Move, Search, Spline, Trash2 } from 'lucide-react'
 import type { MouseEventHandler, PointerEventHandler } from 'react'
+import { useTranslation } from 'react-i18next'
 
 type NodeActionMenuProps = {
   onFind?: MouseEventHandler<HTMLButtonElement>
@@ -29,6 +30,7 @@ export function NodeActionMenu({
   onPointerEnter,
   onPointerLeave,
 }: NodeActionMenuProps) {
+  const { t } = useTranslation()
   return (
     <div
       className="pointer-events-auto flex items-center gap-1 rounded-lg border border-border bg-background/95 p-1 shadow-xl backdrop-blur-md"
@@ -39,10 +41,10 @@ export function NodeActionMenu({
     >
       {onFind && (
         <button
-          aria-label="Find in catalog"
+          aria-label={t('Find in catalog')}
           className="tooltip-trigger rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           onClick={onFind}
-          title="Find in catalog"
+          title={t('Find in catalog')}
           type="button"
         >
           <Search className="h-4 w-4" />
@@ -50,10 +52,10 @@ export function NodeActionMenu({
       )}
       {onMove && (
         <button
-          aria-label="Move"
+          aria-label={t('Move')}
           className="tooltip-trigger rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           onClick={onMove}
-          title="Move"
+          title={t('Move')}
           type="button"
         >
           <Move className="h-4 w-4" />
@@ -61,10 +63,10 @@ export function NodeActionMenu({
       )}
       {onCurve && (
         <button
-          aria-label="Curve"
+          aria-label={t('Curve')}
           className="tooltip-trigger rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           onClick={onCurve}
-          title="Curve"
+          title={t('Curve')}
           type="button"
         >
           <Spline className="h-4 w-4" />
@@ -72,10 +74,10 @@ export function NodeActionMenu({
       )}
       {onDuplicate && (
         <button
-          aria-label="Duplicate"
+          aria-label={t('Duplicate')}
           className="tooltip-trigger rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           onClick={onDuplicate}
-          title="Duplicate"
+          title={t('Duplicate')}
           type="button"
         >
           <Copy className="h-4 w-4" />
@@ -83,10 +85,10 @@ export function NodeActionMenu({
       )}
       {onAddHole && (
         <button
-          aria-label="Cut Out"
+          aria-label={t('Cut Out')}
           className="tooltip-trigger rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           onClick={onAddHole}
-          title="Cut Out"
+          title={t('Cut Out')}
           type="button"
         >
           <Icon height={16} icon="carbon:cut-out" width={16} />
@@ -94,10 +96,10 @@ export function NodeActionMenu({
       )}
       {onDelete && (
         <button
-          aria-label="Delete"
+          aria-label={t('Delete')}
           className="tooltip-trigger rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
           onClick={onDelete}
-          title="Delete"
+          title={t('Delete')}
           type="button"
         >
           <Trash2 className="h-4 w-4" />

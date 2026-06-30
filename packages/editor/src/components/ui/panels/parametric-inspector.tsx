@@ -14,6 +14,7 @@ import { useViewer } from '@pascal-app/viewer'
 import { Icon } from '@iconify/react'
 import { Move, Trash2 } from 'lucide-react'
 import { type ComponentType, lazy, Suspense, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { sfxEmitter } from '../../../lib/sfx-bus'
 import { collectZoneContentIds } from '../../../lib/zone-content'
 import useEditor from '../../../store/use-editor'
@@ -45,6 +46,7 @@ export function ParametricInspector({
   nodeId,
   onClose,
 }: { footer?: React.ReactNode; nodeId?: AnyNodeId; onClose?: () => void } = {}) {
+  const { t } = useTranslation()
   const selectedIdFromSelection = useViewer((s) => s.selection.selectedIds[0]) as
     | AnyNodeId
     | undefined
@@ -174,10 +176,10 @@ export function ParametricInspector({
         </Suspense>
       )}
       {(canMove || canDelete || (parametrics.actions && parametrics.actions.length > 0)) && (
-        <PanelSection title="Actions">
+        <PanelSection title={t('Actions')}>
           <ActionGroup className={isZone ? 'flex-col' : undefined}>
             {canMove && (
-              <ActionButton icon={<Move className="h-4 w-4" />} label="Move" onClick={handleMove} />
+              <ActionButton icon={<Move className="h-4 w-4" />} label={t('Move')} onClick={handleMove} />
             )}
             {parametrics.actions?.map((action, i) => (
               <ParamActionButton action={action} key={`paramaction-${i}`} nodeId={selectedId} />
@@ -188,13 +190,13 @@ export function ParametricInspector({
                   <ActionButton
                     className="w-full flex-none"
                     icon={<Trash2 className="h-4 w-4 text-red-400" />}
-                    label="Delete"
+                    label={t('Delete')}
                     onClick={() => handleDelete(false)}
                   />
                   <ActionButton
                     className="w-full flex-none"
                     icon={<Trash2 className="h-4 w-4 text-red-400" />}
-                    label="Delete with contents"
+                    label={t('Delete with contents')}
                     onClick={() => handleDelete(true)}
                   />
                 </>
@@ -202,7 +204,7 @@ export function ParametricInspector({
                 <ActionButton
                   className="border-red-500/40 text-red-200 hover:bg-red-500/15"
                   icon={<Trash2 className="h-4 w-4" />}
-                  label="Delete"
+                  label={t('Delete')}
                   onClick={() => handleDelete()}
                 />
               ))}

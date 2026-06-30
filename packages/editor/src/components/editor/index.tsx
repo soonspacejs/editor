@@ -18,6 +18,7 @@ import {
   Viewer,
 } from '@pascal-app/viewer'
 import { memo, type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ViewerOverlay } from '../../components/viewer-overlay'
 import { ViewerZoneSystem } from '../../components/viewer-zone-system'
 import { type SaveStatus, useAutoSave } from '../../hooks/use-auto-save'
@@ -176,12 +177,13 @@ export interface EditorProps {
 }
 
 function EditorSceneCrashFallback() {
+  const { t } = useTranslation()
   return (
     <div className="fixed inset-0 z-80 flex items-center justify-center bg-background/95 p-4 text-foreground">
       <div className="w-full max-w-md rounded-2xl border border-border/60 bg-background p-6 shadow-xl">
-        <h2 className="font-semibold text-lg">The editor scene failed to render</h2>
+        <h2 className="font-semibold text-lg">{t('The editor scene failed to render')}</h2>
         <p className="mt-2 text-muted-foreground text-sm">
-          You can retry the scene or return home without reloading the whole app shell.
+          {t('You can retry the scene or return home without reloading the whole app shell.')}
         </p>
         <div className="mt-4 flex items-center gap-2">
           <button
@@ -189,13 +191,13 @@ function EditorSceneCrashFallback() {
             onClick={() => window.location.reload()}
             type="button"
           >
-            Reload editor
+            {t('Reload editor')}
           </button>
           <a
             className="rounded-md border border-border bg-background px-3 py-2 font-medium text-sm hover:bg-accent/40"
             href="/"
           >
-            Back to home
+            {t('Back to home')}
           </a>
         </div>
       </div>
@@ -206,6 +208,7 @@ function EditorSceneCrashFallback() {
 // ── Sidebar slot: in-flow, resizable, collapses to a grab strip ──────────────
 
 function SidebarSlot({ children }: { children: ReactNode }) {
+  const { t } = useTranslation()
   const width = useSidebarStore((s) => s.width)
   const isCollapsed = useSidebarStore((s) => s.isCollapsed)
   const setIsCollapsed = useSidebarStore((s) => s.setIsCollapsed)
@@ -277,7 +280,7 @@ function SidebarSlot({ children }: { children: ReactNode }) {
           <div
             className="absolute inset-0 z-10 cursor-col-resize transition-colors hover:bg-primary/20"
             onPointerDown={handleGrabDown}
-            title="Expand sidebar"
+            title={t('Expand sidebar')}
           />
         ) : (
           children
@@ -412,25 +415,26 @@ function writeCameraControlsHintDismissed(dismissed: boolean) {
 }
 
 function InlineShortcutKey({ shortcutKey }: { shortcutKey: ShortcutKey }) {
+  const { t } = useTranslation()
   const meta = CAMERA_SHORTCUT_KEY_META[shortcutKey.value]
 
   if (meta?.icon) {
     return (
       <span
-        aria-label={meta.label}
+        aria-label={t(meta.label)}
         className="inline-flex items-center text-foreground/90"
         role="img"
-        title={meta.label}
+        title={t(meta.label)}
       >
         <Icon aria-hidden="true" color="currentColor" height={16} icon={meta.icon} width={16} />
-        <span className="sr-only">{meta.label}</span>
+        <span className="sr-only">{t(meta.label)}</span>
       </span>
     )
   }
 
   return (
     <span className="font-medium text-[11px] text-foreground/90">
-      {meta?.text ?? shortcutKey.value}
+      {meta?.text ? t(meta.text) : t(shortcutKey.value)}
     </span>
   )
 }
@@ -449,10 +453,11 @@ function ShortcutSequence({ keys }: { keys: ShortcutKey[] }) {
 }
 
 function CameraControlHintItem({ hint }: { hint: CameraControlHint }) {
+  const { t } = useTranslation()
   return (
     <div className="flex min-w-0 flex-col items-center gap-1.5 px-4 text-center first:pl-0 last:pr-0">
       <span className="font-medium text-[10px] text-muted-foreground/60 tracking-[0.03em]">
-        {hint.action}
+        {t(hint.action)}
       </span>
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         <ShortcutSequence keys={hint.keys} />
@@ -474,12 +479,13 @@ function ViewerCanvasControlsHint({
   isPreviewMode: boolean
   onDismiss: () => void
 }) {
+  const { t } = useTranslation()
   const hints = isPreviewMode ? PREVIEW_CAMERA_CONTROL_HINTS : EDITOR_CAMERA_CONTROL_HINTS
 
   return (
     <div className="pointer-events-none absolute top-14 left-1/2 z-40 max-w-[calc(100%-2rem)] -translate-x-1/2">
       <section
-        aria-label="Camera controls hint"
+        aria-label={t('Camera controls hint')}
         className="pointer-events-auto flex items-start gap-3 rounded-2xl border border-border/35 bg-background/90 px-3.5 py-2.5 shadow-elevation-4 backdrop-blur-xl"
       >
         <div className="grid min-w-0 flex-1 grid-cols-3 items-start divide-x divide-border/18">
@@ -490,7 +496,7 @@ function ViewerCanvasControlsHint({
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              aria-label="Dismiss camera controls hint"
+              aria-label={t('Dismiss camera controls hint')}
               className="flex h-5 shrink-0 items-center justify-center self-center border-border/18 border-l pl-3 text-muted-foreground/70 transition-colors hover:text-foreground"
               onClick={onDismiss}
               type="button"
@@ -505,7 +511,7 @@ function ViewerCanvasControlsHint({
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom" sideOffset={8}>
-            Dismiss
+            {t('Dismiss')}
           </TooltipContent>
         </Tooltip>
       </section>

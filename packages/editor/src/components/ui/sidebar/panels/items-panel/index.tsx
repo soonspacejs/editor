@@ -3,6 +3,7 @@
 import type { AssetInput } from '@pascal-app/core'
 import NextImage from 'next/image'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { triggerSFX } from '../../../../../lib/sfx-bus'
 import { cn } from '../../../../../lib/utils'
 import type { CatalogCategory } from '../../../../../store/use-editor'
@@ -98,6 +99,7 @@ function LegacyItemsPanel({
   showSourceFilter?: boolean
   showTagFilters?: boolean
 }) {
+  const { t } = useTranslation()
   const mode = useEditor((s) => s.mode)
   const catalogCategory = useEditor((s) => s.catalogCategory)
   const setMode = useEditor((s) => s.setMode)
@@ -242,7 +244,7 @@ function LegacyItemsPanel({
               setSearch(e.target.value)
               onSearchChange?.(e.target.value)
             }}
-            placeholder="Search..."
+            placeholder={t('Search...')}
             type="text"
             value={search}
           />
@@ -262,7 +264,7 @@ function LegacyItemsPanel({
                     onClick={() => setActiveSource(isActive ? null : chip.id)}
                     type="button"
                   >
-                    {chip.label}
+                    {t(chip.label)}
                   </button>
                 )
               })}
@@ -284,7 +286,7 @@ function LegacyItemsPanel({
                   onClick={() => setActivePlacementTag(null)}
                   type="button"
                 >
-                  All
+                  {t('All')}
                 </button>
                 {placementTags.map((tag) => {
                   const count = placementCount(tag)
@@ -376,7 +378,7 @@ function LegacyItemsPanel({
         ) : isServerSearch && search && searchResults?.length === 0 ? (
           (emptyState ?? (
             <div className="flex h-full items-center justify-center text-muted-foreground text-xs">
-              No results for &ldquo;{search}&rdquo;
+              {t('No results for “{{query}}”', { query: search })}
             </div>
           ))
         ) : (

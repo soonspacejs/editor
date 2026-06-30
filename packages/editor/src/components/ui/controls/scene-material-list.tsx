@@ -10,6 +10,7 @@ import {
 } from '@pascal-app/core'
 import { Copy, Paintbrush, Pencil, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import useEditor from '../../../store/use-editor'
 import { Button } from '../primitives/button'
 import { Input } from '../primitives/input'
@@ -108,6 +109,7 @@ function SceneMaterialRow({
   removeSceneMaterial: ReturnType<typeof useScene.getState>['removeSceneMaterial']
   setActivePaintMaterial: ReturnType<typeof useEditor.getState>['setActivePaintMaterial']
 }) {
+  const { t } = useTranslation()
   // A freshly-created material (via "+ Custom") mounts with its editor open.
   const [isEditingMaterial, setIsEditingMaterial] = useState(autoEdit)
   const [draftName, setDraftName] = useState(sceneMaterial.name)
@@ -166,13 +168,15 @@ function SceneMaterialRow({
 
       <div className="mt-2 flex items-center justify-between gap-2">
         <span className="text-muted-foreground text-xs">
-          Used by {usageCount} {usageCount === 1 ? 'part' : 'parts'}
+          {usageCount === 1
+            ? t('Used by {{count}} part', { count: usageCount })
+            : t('Used by {{count}} parts', { count: usageCount })}
         </span>
         <div className="flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                aria-label="Paint with"
+                aria-label={t('Paint with')}
                 onClick={() =>
                   setActivePaintMaterial({
                     materialPreset: toSceneMaterialRef(id),
@@ -186,12 +190,12 @@ function SceneMaterialRow({
                 <Paintbrush />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Paint with</TooltipContent>
+            <TooltipContent>{t('Paint with')}</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                aria-label="Edit"
+                aria-label={t('Edit')}
                 aria-pressed={isEditingMaterial}
                 onClick={() => setIsEditingMaterial((value) => !value)}
                 size="icon-sm"
@@ -201,12 +205,12 @@ function SceneMaterialRow({
                 <Pencil />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Edit</TooltipContent>
+            <TooltipContent>{t('Edit')}</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                aria-label="Duplicate"
+                aria-label={t('Duplicate')}
                 onClick={duplicateMaterial}
                 size="icon-sm"
                 type="button"
@@ -215,12 +219,12 @@ function SceneMaterialRow({
                 <Copy />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Duplicate</TooltipContent>
+            <TooltipContent>{t('Duplicate')}</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                aria-label="Delete"
+                aria-label={t('Delete')}
                 onClick={() => removeSceneMaterial(id)}
                 size="icon-sm"
                 type="button"
@@ -229,7 +233,7 @@ function SceneMaterialRow({
                 <Trash2 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Delete</TooltipContent>
+            <TooltipContent>{t('Delete')}</TooltipContent>
           </Tooltip>
         </div>
       </div>

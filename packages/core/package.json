@@ -71,6 +71,7 @@
   },
   "dependencies": {
     "dedent": "^1.7.1",
+    "i18next": "^23.12.2",
     "idb-keyval": "^6.2.2",
     "mitt": "^3.0.1",
     "nanoid": "^5.1.6",

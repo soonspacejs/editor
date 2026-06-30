@@ -1,5 +1,6 @@
 import { Keyboard } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from './../../../../../components/ui/primitives/button'
 import {
   Dialog,
@@ -175,27 +176,29 @@ function ShortcutKeys({ keys }: { keys: string[] }) {
 }
 
 export function KeyboardShortcutsDialog() {
+  const { t } = useTranslation()
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button className="w-full justify-start gap-2" variant="outline">
           <Keyboard className="size-4" />
-          Keyboard Shortcuts
+          {t('Keyboard Shortcuts')}
         </Button>
       </DialogTrigger>
       <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden p-0 sm:max-w-3xl">
         <DialogHeader className="shrink-0 border-b px-6 py-4">
-          <DialogTitle>Keyboard Shortcuts</DialogTitle>
+          <DialogTitle>{t('Keyboard Shortcuts')}</DialogTitle>
           <DialogDescription>
-            Shortcuts are context-aware. Guided constraints are enabled by default; hold Shift
-            during an active gesture to build freely.
+            {t(
+              'Shortcuts are context-aware. Guided constraints are enabled by default; hold Shift during an active gesture to build freely.',
+            )}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-6 py-4">
           {SHORTCUT_CATEGORIES.map((category) => (
             <section className="space-y-2" key={category.title}>
-              <h3 className="font-medium text-sm">{category.title}</h3>
+              <h3 className="font-medium text-sm">{t(category.title)}</h3>
               <div className="overflow-hidden rounded-md border border-border/80">
                 {category.shortcuts.map((shortcut, index) => (
                   <div
@@ -204,9 +207,9 @@ export function KeyboardShortcutsDialog() {
                   >
                     <ShortcutKeys keys={shortcut.keys} />
                     <div>
-                      <p className="text-sm">{shortcut.action}</p>
+                      <p className="text-sm">{t(shortcut.action)}</p>
                       {shortcut.note ? (
-                        <p className="text-muted-foreground text-xs">{shortcut.note}</p>
+                        <p className="text-muted-foreground text-xs">{t(shortcut.note)}</p>
                       ) : null}
                     </div>
                     {index < category.shortcuts.length - 1 ? (

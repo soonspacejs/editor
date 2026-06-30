@@ -7,6 +7,7 @@ import {
 import { useViewer } from '@pascal-app/viewer'
 import { Camera, Hexagon, Save, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { sfxEmitter } from './../../../../../lib/sfx-bus'
 import { collectZoneContentIds } from './../../../../../lib/zone-content'
 import { ColorDot } from './../../../../../components/ui/primitives/color-dot'
@@ -21,6 +22,7 @@ import { ActionButton } from '../../../controls/action-button'
 import { PanelSection } from '../../../controls/panel-section'
 
 function ZoneItem({ zone }: { zone: ZoneNode }) {
+  const { t } = useTranslation()
   const [cameraPopoverOpen, setCameraPopoverOpen] = useState(false)
   const deleteNode = useScene((state) => state.deleteNode)
   const updateNode = useScene((state) => state.updateNode)
@@ -67,7 +69,7 @@ function ZoneItem({ zone }: { zone: ZoneNode }) {
           <button
             className="relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/row:opacity-100 dark:hover:bg-white/10"
             onClick={(e) => e.stopPropagation()}
-            title="Camera snapshot"
+            title={t('Camera snapshot')}
           >
             <Camera className="h-3 w-3" />
             {zone.camera && (
@@ -92,7 +94,7 @@ function ZoneItem({ zone }: { zone: ZoneNode }) {
                 }}
               >
                 <Camera className="h-3.5 w-3.5" />
-                View snapshot
+                {t('View snapshot')}
               </button>
             )}
             <button
@@ -104,7 +106,7 @@ function ZoneItem({ zone }: { zone: ZoneNode }) {
               }}
             >
               <Camera className="h-3.5 w-3.5" />
-              {zone.camera ? 'Update snapshot' : 'Take snapshot'}
+              {zone.camera ? t('Update snapshot') : t('Take snapshot')}
             </button>
             {zone.camera && (
               <button
@@ -116,7 +118,7 @@ function ZoneItem({ zone }: { zone: ZoneNode }) {
                 }}
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                Clear snapshot
+                {t('Clear snapshot')}
               </button>
             )}
           </div>
@@ -133,6 +135,7 @@ function ZoneItem({ zone }: { zone: ZoneNode }) {
 }
 
 export function ZonePanel() {
+  const { t } = useTranslation()
   const nodes = useScene((state) => state.nodes)
   const currentLevelId = useViewer((state) => state.selection.levelId)
   const selectedZoneId = useViewer((state) => state.selection.zoneId)
@@ -169,7 +172,7 @@ export function ZonePanel() {
   if (!currentLevelId) {
     return (
       <div className="px-3 py-4 text-muted-foreground text-sm">
-        Select a level to view and create zones
+        {t('Select a level to view and create zones')}
       </div>
     )
   }
@@ -178,34 +181,34 @@ export function ZonePanel() {
     <div className="py-1">
       {levelZones.length === 0 ? (
         <div className="px-3 py-4 text-muted-foreground text-sm">
-          No zones on this level.{' '}
+          {t('No zones on this level.')}{' '}
           <button className="cursor-pointer text-primary hover:underline" onClick={handleAddZone}>
-            Add one
+            {t('Add one')}
           </button>
         </div>
       ) : (
         levelZones.map((zone) => <ZoneItem key={zone.id} zone={zone} />)
       )}
       {selectedZone ? (
-        <PanelSection className="mt-2 border-t" title="Actions">
+        <PanelSection className="mt-2 border-t" title={t('Actions')}>
           <ActionButton
             className="w-full flex-none"
             icon={<Save className="h-4 w-4" />}
-            label="Save to catalog"
+            label={t('Save to catalog')}
             onClick={() => emitter.emit('room-preset:create', { zoneId: selectedZone.id })}
             type="button"
           />
           <ActionButton
             className="w-full flex-none"
             icon={<Trash2 className="h-4 w-4 text-red-400" />}
-            label="Delete"
+            label={t('Delete')}
             onClick={() => deleteSelectedZone(false)}
             type="button"
           />
           <ActionButton
             className="w-full flex-none"
             icon={<Trash2 className="h-4 w-4 text-red-400" />}
-            label="Delete with contents"
+            label={t('Delete with contents')}
             onClick={() => deleteSelectedZone(true)}
             type="button"
           />

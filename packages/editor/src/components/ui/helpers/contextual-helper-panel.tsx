@@ -1,5 +1,6 @@
 import { Icon } from '@iconify/react'
 import { Fragment } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   CONTINUATION_PROFILES,
   type ContinuationContext,
@@ -132,30 +133,32 @@ function nextGridSnapStep(step: GridSnapStep): GridSnapStep {
 // The active interaction's snapping controls, scoped to its context (wall / item
 // / polygon) so each action shows only the modes that make sense for it.
 function SnappingChips({ context }: { context: SnapContext }) {
+  const { t } = useTranslation()
   const snappingMode = useEditor((s) => s.snappingModeByContext[context])
   const setSnappingMode = useEditor((s) => s.setSnappingMode)
   const gridSnapStep = useEditor((s) => s.gridSnapStep)
   const setGridSnapStep = useEditor((s) => s.setGridSnapStep)
 
   const gridActive = resolveSnapFlags(snappingMode).grid
+  const snappingLabel = t('Snapping: {{mode}}', { mode: t(SNAPPING_MODE_LABELS[snappingMode]) })
 
   return (
     <>
       <ChipRow
-        ariaLabel={`Snapping: ${SNAPPING_MODE_LABELS[snappingMode]}`}
+        ariaLabel={snappingLabel}
         icon={SNAPPING_MODE_ICONS[snappingMode]}
-        label={`Snapping: ${SNAPPING_MODE_LABELS[snappingMode]}`}
+        label={snappingLabel}
         onClick={() => setSnappingMode(context, cycleSnappingModeIn(context, snappingMode))}
         shortcut="Shift"
-        tooltip="Snapping mode — click or press Shift to cycle"
+        tooltip={t('Snapping mode — click or press Shift to cycle')}
       />
       {gridActive ? (
         <ChipRow
-          ariaLabel={`Grid step: ${gridSnapStep.toFixed(2)} m`}
-          label={`Grid: ${gridSnapStep.toFixed(2)} m`}
+          ariaLabel={t('Grid step: {{step}} m', { step: gridSnapStep.toFixed(2) })}
+          label={t('Grid: {{step}} m', { step: gridSnapStep.toFixed(2) })}
           onClick={() => setGridSnapStep(nextGridSnapStep(gridSnapStep))}
           shortcut="Ctrl"
-          tooltip="Grid step — click or tap Ctrl to cycle"
+          tooltip={t('Grid step — click or tap Ctrl to cycle')}
         />
       ) : null}
     </>
@@ -163,20 +166,21 @@ function SnappingChips({ context }: { context: SnapContext }) {
 }
 
 function ContinuationChip({ context }: { context: ContinuationContext }) {
+  const { t } = useTranslation()
   const mode = useEditor((s) => s.getContinuation(context))
   const cycleContinuation = useEditor((s) => s.cycleContinuation)
   const profile = CONTINUATION_PROFILES[context]
-  const label = profile.labels[mode] ?? mode
+  const label = t(profile.labels[mode] ?? mode)
   const icon = profile.icons[mode] ?? 'lucide:repeat'
 
   return (
     <ChipRow
-      ariaLabel={`Continuation: ${label}`}
+      ariaLabel={t('Continuation: {{label}}', { label })}
       icon={icon}
       label={label}
       onClick={() => cycleContinuation(context)}
       shortcut="C"
-      tooltip="Continuation — click or press C to cycle"
+      tooltip={t('Continuation — click or press C to cycle')}
     />
   )
 }
@@ -192,6 +196,7 @@ const PAINT_SCOPE_ICONS: Record<PaintScope, string> = {
 // derived `paintHover` (scopes + labels), so it works for any kind without a
 // per-target table.
 function PaintScopeChip() {
+  const { t } = useTranslation()
   // What the cursor is over (that's what the next click paints). `null` when not
   // over a paintable surface — including an item with no slots.
   const paintHover = useEditor((s) => s.paintHover)
@@ -203,13 +208,17 @@ function PaintScopeChip() {
   // Nothing to paint with yet (no material picked, not erasing) → the first step
   // is choosing a material, so say that before anything about scope or hovering.
   if (!(paintEraser || hasActivePaintMaterial(activePaintMaterial))) {
-    return <ChipRow icon="lucide:palette" label="Select a material to paint" />
+    return <ChipRow icon="lucide:palette" label={t('Select a material to paint')} />
   }
 
   // Not over anything paintable → guide the user to hover, still teaching Shift.
   if (!paintHover) {
     return (
-      <ChipRow icon="lucide:mouse-pointer-click" label="Hover a surface to paint" shortcut="Shift" />
+      <ChipRow
+        icon="lucide:mouse-pointer-click"
+        label={t('Hover a surface to paint')}
+        shortcut="Shift"
+      />
     )
   }
 
@@ -217,26 +226,22 @@ function PaintScopeChip() {
   // A scope carried over from another node (the mode is global) falls back to
   // the narrowest for both display and — via the apply-time resolver — behaviour.
   const effective: PaintScope = scopes.includes(paintScope) ? paintScope : 'single'
+  const scopeLabel = t('Paint: {{scope}}', { scope: paintScopeLabel(effective, paintHover) })
 
   // Paintable but with no scope choice (roof, a one-slot node, …) → a passive
   // row that still names the surface, so the user always sees what they'll paint.
   if (scopes.length <= 1) {
-    return (
-      <ChipRow
-        icon={PAINT_SCOPE_ICONS[effective]}
-        label={`Paint: ${paintScopeLabel(effective, paintHover)}`}
-      />
-    )
+    return <ChipRow icon={PAINT_SCOPE_ICONS[effective]} label={scopeLabel} />
   }
 
   return (
     <ChipRow
-      ariaLabel={`Paint scope: ${paintScopeLabel(effective, paintHover)}`}
+      ariaLabel={t('Paint scope: {{scope}}', { scope: paintScopeLabel(effective, paintHover) })}
       icon={PAINT_SCOPE_ICONS[effective]}
-      label={`Paint: ${paintScopeLabel(effective, paintHover)}`}
+      label={scopeLabel}
       onClick={() => cyclePaintScope()}
       shortcut="Shift"
-      tooltip="Paint scope — click or press Shift to cycle"
+      tooltip={t('Paint scope — click or press Shift to cycle')}
     />
   )
 }
@@ -254,6 +259,7 @@ export function ContextualHelperPanel({
   showPaintScope?: boolean
   continuationContext?: ContinuationContext | null
 }) {
+  const { t } = useTranslation()
   if (hints.length === 0 && !snapContext && !showPaintScope && !continuationContext)
     return null
 
@@ -275,11 +281,11 @@ export function ContextualHelperPanel({
                 hint.active ? 'text-foreground' : 'text-muted-foreground',
               )}
             >
-              {hint.label}
+              {t(hint.label)}
             </div>
             {hint.subtitle ? (
               <div className="text-[10px] text-muted-foreground/70 leading-snug">
-                {hint.subtitle}
+                {t(hint.subtitle)}
               </div>
             ) : null}
           </div>
