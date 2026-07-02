@@ -1,9 +1,16 @@
 'use client'
 
-import { Editor, ItemsPanel, Tooltip, TooltipContent, TooltipTrigger } from '@pascal-app/editor'
+import {
+  Editor,
+  ItemsPanel,
+  type SceneGraph,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@pascal-app/editor'
 import { Hammer, Layers, Package, Settings } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BuildTab } from '@/components/build-tab'
 import {
@@ -86,31 +93,53 @@ const SIDEBAR_TABS = [
 ]
 
 const PROJECT_ID = 'local-editor'
+const LOCAL_SCENE_STORAGE_KEY = 'pascal-editor-scene'
+const LOCAL_SCENE_META_STORAGE_KEY = 'pascal-editor-scene-meta'
+
+function saveLocalScene(name: string, graph: SceneGraph) {
+  localStorage.setItem(LOCAL_SCENE_STORAGE_KEY, JSON.stringify(graph))
+  localStorage.setItem(LOCAL_SCENE_META_STORAGE_KEY, JSON.stringify({ name, savedAt: Date.now() }))
+}
 
 export default function Home() {
   const { t } = useTranslation()
+  const sceneNameRef = useRef(t('Untitled structure'))
+  const [saveError, setSaveError] = useState<string | null>(null)
   const sidebarTabs = SIDEBAR_TABS.map((tab) => ({ ...tab, label: t(tab.label) }))
+
+  const handleEditorSave = useCallback(
+    async (graph: SceneGraph) => {
+      saveLocalScene(sceneNameRef.current.trim() || t('Untitled structure'), graph)
+      setSaveError(null)
+    },
+    [t],
+  )
+
+  const handleManualSave = useCallback(
+    async (graph: SceneGraph, { name }: { name: string }) => {
+      try {
+        sceneNameRef.current = name
+        saveLocalScene(name, graph)
+        setSaveError(null)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : t('Save failed')
+        setSaveError(message)
+        throw error instanceof Error ? error : new Error(message)
+      }
+    },
+    [t],
+  )
+
   return (
     <div className="relative h-screen w-screen">
-      {PROJECT_ID === 'local-editor' && (
-        <div className="pointer-events-none absolute top-3 left-1/2 z-40 -translate-x-1/2">
-          <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-border/60 bg-background/90 px-4 py-1.5 text-xs shadow-sm backdrop-blur">
-            <span className="text-muted-foreground">{t('Local editor — scenes are not saved.')}</span>
-            <Link className="font-medium text-foreground hover:underline" href="/scenes">
-              {t('Open recent scenes')}
-            </Link>
-            <span aria-hidden className="text-muted-foreground">
-              ·
-            </span>
-            <Link className="font-medium text-foreground hover:underline" href="/scenes">
-              {t('Create new')}
-            </Link>
-          </div>
-        </div>
-      )}
       <Editor
+        initialSceneName={sceneNameRef.current}
         layoutVersion="v2"
+        onManualSave={handleManualSave}
+        onSave={handleEditorSave}
         projectId={PROJECT_ID}
+        sceneNameSaveError={saveError}
+        showSceneNameSaveBar
         sidebarHeader={
           // Use the editor's own Tooltip primitive (the exact component the rail
           // tabs use) so the "退出" label matches them precisely — white bubble,

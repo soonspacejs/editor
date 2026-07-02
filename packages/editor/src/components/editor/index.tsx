@@ -26,8 +26,10 @@ import { useKeyboard } from '../../hooks/use-keyboard'
 import { type ActivePaintMaterial, hasActivePaintMaterial } from '../../lib/material-paint'
 import {
   applySceneGraphToEditor,
+  getCurrentSceneGraph,
   loadSceneFromLocalStorage,
   type SceneGraph,
+  saveSceneToLocalStorage,
   writePersistedSelection,
 } from '../../lib/scene'
 import { initSFXBus } from '../../lib/sfx-bus'
@@ -68,6 +70,7 @@ import { GroupMoveHandle } from './group-move-handle'
 import { GroupRotateHandle } from './group-rotate-handle'
 import { NodeArrowHandles } from './node-arrow-handles'
 import { RiserDiagramPanel } from './riser-diagram-panel'
+import { SceneNameSaveBar } from './scene-name-save-bar'
 import { SelectionManager } from './selection-manager'
 import { SiteEdgeLabels } from './site-edge-labels'
 import { SlabHoleHighlights } from './slab-hole-highlights'
@@ -87,6 +90,13 @@ const PAINT_CURSOR_BADGE_OFFSET_X = 14
 const PAINT_CURSOR_BADGE_OFFSET_Y = 14
 const SCENE_READY_FALLBACK_MS = 8000
 type PaintCursorBadgeState = 'empty' | 'ready' | 'blocked'
+export interface EditorCloseSlotContext {
+  requestClose: () => void
+  hasUnsavedUserChanges: boolean
+}
+
+type SidebarHeaderSlot = ReactNode | ((context: EditorCloseSlotContext) => ReactNode)
+
 const EDITOR_HOVER_STYLES: HoverStyles = {
   default: { visibleColor: 0x00_aa_ff, hiddenColor: 0xf3_ff_47, strength: 5, pulse: true },
   delete: { visibleColor: 0xef_44_44, hiddenColor: 0x99_1b_1b, strength: 6, pulse: false },
@@ -137,7 +147,7 @@ export interface EditorProps {
   viewerToolbarLeft?: ReactNode
   viewerToolbarRight?: ReactNode
   /** Rendered at the top of the left icon rail (v2), before the tabs, e.g. an exit button. */
-  sidebarHeader?: ReactNode
+  sidebarHeader?: SidebarHeaderSlot
   /**
    * Docked below the node inspector (v2). Hosts mount the "save as preset"
    * affordance here so it reads as part of the inspector surface and shows
@@ -150,8 +160,15 @@ export interface EditorProps {
   // Persistence — defaults to localStorage when omitted
   onLoad?: () => Promise<SceneGraph | null>
   onSave?: (scene: SceneGraph, options?: { keepalive?: boolean }) => Promise<void>
+  onManualSave?: (scene: SceneGraph, options: { name: string }) => Promise<void> | void
   onDirty?: () => void
   onSaveStatusChange?: (status: SaveStatus) => void
+  enableAutoSave?: boolean
+  initialSaveStatus?: SaveStatus
+  showSceneNameSaveBar?: boolean
+  initialSceneName?: string | null
+  sceneNameSaveError?: string | null
+  onRequestClose?: () => void
 
   // Version preview
   previewScene?: SceneGraph
@@ -1087,8 +1104,15 @@ export default function Editor({
   projectId,
   onLoad,
   onSave,
+  onManualSave,
   onDirty,
   onSaveStatusChange,
+  enableAutoSave = true,
+  initialSaveStatus,
+  showSceneNameSaveBar = false,
+  initialSceneName,
+  sceneNameSaveError,
+  onRequestClose,
   previewScene,
   isVersionPreviewMode = false,
   isLoading = false,
@@ -1100,15 +1124,48 @@ export default function Editor({
   extraSidebarPanels,
   commandPaletteEmptyAction,
 }: EditorProps) {
+  const { t } = useTranslation()
   const isFirstPersonMode = useEditor((s) => s.isFirstPersonMode)
   const isStudioMode = useEditor((s) => s.workspaceMode === 'studio')
+  const [sceneName, setSceneName] = useState(
+    () => initialSceneName?.trim() || t('Untitled structure'),
+  )
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>(() => initialSaveStatus ?? 'idle')
+  const [manualSaveError, setManualSaveError] = useState<string | null>(null)
+  const [hasUnsavedUserChanges, setHasUnsavedUserChanges] = useState(false)
+
+  useEffect(() => {
+    const nextName = initialSceneName?.trim()
+    if (nextName) setSceneName(nextName)
+  }, [initialSceneName])
+
+  const handleSaveStatusChange = useCallback(
+    (status: SaveStatus) => {
+      setSaveStatus(status)
+      if (status !== 'error') {
+        setManualSaveError(null)
+      }
+      if (status === 'saved') {
+        setHasUnsavedUserChanges(false)
+      }
+      onSaveStatusChange?.(status)
+    },
+    [onSaveStatusChange],
+  )
+
+  const handleDirty = useCallback(() => {
+    setHasUnsavedUserChanges(true)
+    onDirty?.()
+  }, [onDirty])
 
   useKeyboard({ isVersionPreviewMode, disabled: isFirstPersonMode || isStudioMode })
 
-  const { isLoadingSceneRef } = useAutoSave({
+  const { hasDirtyChangesRef, isLoadingSceneRef, markSaved } = useAutoSave({
+    enabled: enableAutoSave,
+    initialSaveStatus,
     onSave,
-    onDirty,
-    onSaveStatusChange,
+    onDirty: handleDirty,
+    onSaveStatusChange: handleSaveStatusChange,
     isVersionPreviewMode,
   })
 
@@ -1206,6 +1263,67 @@ export default function Editor({
   const handleSceneReadyChange = useCallback((ready: boolean) => {
     setIsViewerSceneReady(ready)
   }, [])
+
+  const handleManualSave = useCallback(
+    async (name: string) => {
+      const nextName = name.trim()
+      if (!nextName) return
+
+      handleSaveStatusChange('saving')
+      setManualSaveError(null)
+
+      try {
+        const sceneGraph = getCurrentSceneGraph()
+        if (onManualSave) {
+          await onManualSave(sceneGraph, { name: nextName })
+        } else if (onSave) {
+          await onSave(sceneGraph)
+        } else {
+          saveSceneToLocalStorage(sceneGraph)
+        }
+        setSceneName(nextName)
+        markSaved()
+      } catch (error) {
+        setManualSaveError(error instanceof Error ? error.message : t('Save failed'))
+        handleSaveStatusChange('error')
+      }
+    },
+    [handleSaveStatusChange, markSaved, onManualSave, onSave, t],
+  )
+
+  const handleRequestClose = useCallback(() => {
+    if (!onRequestClose) return
+
+    if (
+      hasDirtyChangesRef.current &&
+      typeof window !== 'undefined' &&
+      !window.confirm(t('You have unsaved changes. Exit without saving?'))
+    ) {
+      return
+    }
+
+    onRequestClose()
+  }, [hasDirtyChangesRef, onRequestClose, t])
+
+  const resolvedSidebarHeader =
+    typeof sidebarHeader === 'function'
+      ? sidebarHeader({
+          hasUnsavedUserChanges,
+          requestClose: handleRequestClose,
+        })
+      : sidebarHeader
+
+  const sceneNameSaveBar = showSceneNameSaveBar ? (
+    <div className="pointer-events-none fixed top-3 left-1/2 z-40 -translate-x-1/2">
+      <SceneNameSaveBar
+        error={sceneNameSaveError ?? manualSaveError}
+        onChange={setSceneName}
+        onSave={handleManualSave}
+        saveStatus={saveStatus}
+        value={sceneName}
+      />
+    </div>
+  ) : null
 
   useEffect(() => {
     if (isLoading || isSceneLoading || !hasLoadedInitialScene || isViewerSceneReady) return
@@ -1326,6 +1444,7 @@ export default function Editor({
             <SceneLoader className="bg-background" />
           </div>
         )}
+        {sceneNameSaveBar}
 
         {!isLoading && isPreviewMode ? (
           <div className="dark flex h-full w-full flex-col bg-neutral-100 text-foreground">
@@ -1370,7 +1489,7 @@ export default function Editor({
                 </>
               }
               renderTabContent={renderTabContent}
-              sidebarHeader={sidebarHeader}
+              sidebarHeader={resolvedSidebarHeader}
               sidebarOverlay={sidebarOverlay}
               sidebarTabs={tabBarTabs}
               viewerContent={viewerCanvas}
@@ -1393,6 +1512,7 @@ export default function Editor({
 
   return (
     <div className="dark flex h-full w-full gap-3 bg-neutral-100 p-3 text-foreground">
+      {sceneNameSaveBar}
       {showLoader && (
         <div className="fixed inset-0 z-60">
           <SceneLoader className="bg-background" />

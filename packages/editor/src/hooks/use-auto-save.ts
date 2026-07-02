@@ -13,6 +13,14 @@ interface UseAutoSaveOptions {
   onDirty?: () => void
   onSaveStatusChange?: (status: SaveStatus) => void
   isVersionPreviewMode?: boolean
+  enabled?: boolean
+  initialSaveStatus?: SaveStatus
+}
+
+interface UseAutoSaveResult {
+  isLoadingSceneRef: MutableRefObject<boolean>
+  hasDirtyChangesRef: MutableRefObject<boolean>
+  markSaved: () => void
 }
 
 /**
@@ -26,19 +34,23 @@ export function useAutoSave({
   onDirty,
   onSaveStatusChange,
   isVersionPreviewMode = false,
-}: UseAutoSaveOptions): { isLoadingSceneRef: MutableRefObject<boolean> } {
+  enabled = true,
+  initialSaveStatus,
+}: UseAutoSaveOptions): UseAutoSaveResult {
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const isSavingRef = useRef(false)
   const isLoadingSceneRef = useRef(false)
   const pendingSaveRef = useRef(false)
   const executeSaveRef = useRef<(() => Promise<void>) | null>(null)
   const hasDirtyChangesRef = useRef(false)
+  const hasCompletedSaveRef = useRef(false)
 
   // Keep latest callback/value refs so the stable subscription always uses current values
   const onSaveRef = useRef(onSave)
   const onDirtyRef = useRef(onDirty)
   const onSaveStatusChangeRef = useRef(onSaveStatusChange)
   const isVersionPreviewModeRef = useRef(isVersionPreviewMode)
+  const enabledRef = useRef(enabled)
 
   useEffect(() => {
     onSaveRef.current = onSave
@@ -52,10 +64,24 @@ export function useAutoSave({
   useEffect(() => {
     isVersionPreviewModeRef.current = isVersionPreviewMode
   }, [isVersionPreviewMode])
+  useEffect(() => {
+    enabledRef.current = enabled
+  }, [enabled])
 
   const setSaveStatus = useCallback((status: SaveStatus) => {
     onSaveStatusChangeRef.current?.(status)
   }, [])
+
+  const markSaved = useCallback(() => {
+    hasCompletedSaveRef.current = true
+    hasDirtyChangesRef.current = false
+    pendingSaveRef.current = false
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+      saveTimeoutRef.current = undefined
+    }
+    setSaveStatus('saved')
+  }, [setSaveStatus])
 
   // Stable subscription to scene changes
   useEffect(() => {
@@ -101,6 +127,7 @@ export function useAutoSave({
         } else {
           saveSceneToLocalStorage(sceneGraph)
         }
+        hasCompletedSaveRef.current = true
         hasDirtyChangesRef.current = false
         setSaveStatus('saved')
       } catch {
@@ -151,6 +178,8 @@ export function useAutoSave({
       onDirtyRef.current?.()
       setSaveStatus('pending')
 
+      if (!enabledRef.current) return
+
       if (isSavingRef.current) {
         pendingSaveRef.current = true
         return
@@ -171,6 +200,7 @@ export function useAutoSave({
     // (mobile Safari, bfcache) where `beforeunload` does not.
     function flushOnExit() {
       if (!hasDirtyChangesRef.current) return
+      if (!enabledRef.current) return
       hasDirtyChangesRef.current = false
       const { nodes, rootNodeIds, collections, materials } = useScene.getState()
       const sceneGraph = { nodes, rootNodeIds, collections, materials } as SceneGraph
@@ -212,6 +242,7 @@ export function useAutoSave({
 
     if (hasDirtyChangesRef.current) {
       setSaveStatus('pending')
+      if (!enabled) return
       if (!saveTimeoutRef.current) {
         saveTimeoutRef.current = setTimeout(() => {
           saveTimeoutRef.current = undefined
@@ -221,8 +252,8 @@ export function useAutoSave({
       return
     }
 
-    setSaveStatus('saved')
-  }, [isVersionPreviewMode, setSaveStatus])
+    setSaveStatus(hasCompletedSaveRef.current ? 'saved' : (initialSaveStatus ?? 'saved'))
+  }, [enabled, initialSaveStatus, isVersionPreviewMode, setSaveStatus])
 
-  return { isLoadingSceneRef }
+  return { hasDirtyChangesRef, isLoadingSceneRef, markSaved }
 }

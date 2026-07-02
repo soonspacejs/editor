@@ -1,7 +1,7 @@
-import { emitter, useScene, validateBuildJson } from '@pascal-app/core'
+import { useScene, validateBuildJson } from '@pascal-app/core'
 import { useViewer } from '@pascal-app/viewer'
 import { TreeView, VisualJson } from '@visual-json/react'
-import { Camera, Download, Save, Trash2, Upload } from 'lucide-react'
+import { Download, Save, Trash2, Upload } from 'lucide-react'
 import {
   type KeyboardEvent,
   type SyntheticEvent,
@@ -187,7 +187,6 @@ export function SettingsPanel({
   const exportScene = useViewer((state) => state.exportScene)
   const shadows = useViewer((state) => state.shadows)
   const setPhase = useEditor((state) => state.setPhase)
-  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false)
   const [pendingImport, setPendingImport] = useState<PendingImport | null>(null)
   const sceneGraphValue = useMemo(
     () => buildSceneGraphValue(nodes as Record<string, SceneNode>, rootNodeIds),
@@ -280,13 +279,6 @@ export function SettingsPanel({
     selectDefaultBuildingAndLevel()
   }
 
-  const handleGenerateThumbnail = () => {
-    if (!projectId) return
-    setIsGeneratingThumbnail(true)
-    emitter.emit('camera-controls:generate-thumbnail', { projectId })
-    setTimeout(() => setIsGeneratingThumbnail(false), 3000)
-  }
-
   const handleVisibilityChange = async (
     field: 'isPrivate' | 'showScansPublic' | 'showGuidesPublic',
     value: boolean,
@@ -377,24 +369,6 @@ export function SettingsPanel({
           {t('Export OBJ')}
         </Button>
       </div>
-
-      {/* Thumbnail Section (only for cloud projects) */}
-      {projectId && !isLocalProject && (
-        <div className="space-y-2">
-          <label className="font-medium text-muted-foreground text-xs uppercase">
-            {t('Thumbnail')}
-          </label>
-          <Button
-            className="w-full justify-start gap-2"
-            disabled={isGeneratingThumbnail}
-            onClick={handleGenerateThumbnail}
-            variant="outline"
-          >
-            <Camera className="size-4" />
-            {isGeneratingThumbnail ? t('Generating...') : t('Generate Thumbnail')}
-          </Button>
-        </div>
-      )}
 
       {/* Save/Load Section */}
       <div className="space-y-2">

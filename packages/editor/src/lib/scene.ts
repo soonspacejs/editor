@@ -388,6 +388,17 @@ export function applySceneGraphToEditor(sceneGraph?: SceneGraph | null) {
   syncEditorSelectionFromCurrentScene()
 }
 
+export function getCurrentSceneGraph(): SceneGraph {
+  const { collections, materials, nodes, rootNodeIds } = useScene.getState()
+
+  return {
+    collections,
+    materials,
+    nodes,
+    rootNodeIds,
+  } as SceneGraph
+}
+
 const LOCAL_STORAGE_KEY = 'pascal-editor-scene'
 
 export function saveSceneToLocalStorage(scene: SceneGraph): void {

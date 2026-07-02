@@ -5,25 +5,17 @@ import {
   type ZoneNode,
 } from '@pascal-app/core'
 import { useViewer } from '@pascal-app/viewer'
-import { Camera, Hexagon, Save, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { Hexagon, Save, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { sfxEmitter } from './../../../../../lib/sfx-bus'
 import { collectZoneContentIds } from './../../../../../lib/zone-content'
 import { ColorDot } from './../../../../../components/ui/primitives/color-dot'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from './../../../../../components/ui/primitives/popover'
 import { cn } from './../../../../../lib/utils'
 import useEditor from './../../../../../store/use-editor'
 import { ActionButton } from '../../../controls/action-button'
 import { PanelSection } from '../../../controls/panel-section'
 
 function ZoneItem({ zone }: { zone: ZoneNode }) {
-  const { t } = useTranslation()
-  const [cameraPopoverOpen, setCameraPopoverOpen] = useState(false)
   const deleteNode = useScene((state) => state.deleteNode)
   const updateNode = useScene((state) => state.updateNode)
   const selectedZoneId = useViewer((state) => state.selection.zoneId)
@@ -63,67 +55,6 @@ function ZoneItem({ zone }: { zone: ZoneNode }) {
       </span>
       <Hexagon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
       <span className="flex-1 truncate">{zone.name}</span>
-      {/* Camera snapshot button */}
-      <Popover onOpenChange={setCameraPopoverOpen} open={cameraPopoverOpen}>
-        <PopoverTrigger asChild>
-          <button
-            className="relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/row:opacity-100 dark:hover:bg-white/10"
-            onClick={(e) => e.stopPropagation()}
-            title={t('Camera snapshot')}
-          >
-            <Camera className="h-3 w-3" />
-            {zone.camera && (
-              <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-            )}
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          align="start"
-          className="w-auto p-1"
-          onClick={(e) => e.stopPropagation()}
-          side="right"
-        >
-          <div className="flex flex-col gap-0.5">
-            {zone.camera && (
-              <button
-                className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-accent"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  emitter.emit('camera-controls:view', { nodeId: zone.id })
-                  setCameraPopoverOpen(false)
-                }}
-              >
-                <Camera className="h-3.5 w-3.5" />
-                {t('View snapshot')}
-              </button>
-            )}
-            <button
-              className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-accent"
-              onClick={(e) => {
-                e.stopPropagation()
-                emitter.emit('camera-controls:capture', { nodeId: zone.id })
-                setCameraPopoverOpen(false)
-              }}
-            >
-              <Camera className="h-3.5 w-3.5" />
-              {zone.camera ? t('Update snapshot') : t('Take snapshot')}
-            </button>
-            {zone.camera && (
-              <button
-                className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-destructive hover:text-destructive-foreground"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  updateNode(zone.id, { camera: undefined })
-                  setCameraPopoverOpen(false)
-                }}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                {t('Clear snapshot')}
-              </button>
-            )}
-          </div>
-        </PopoverContent>
-      </Popover>
       <button
         className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/row:opacity-100 dark:hover:bg-white/10"
         onClick={handleDelete}

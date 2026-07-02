@@ -19,14 +19,18 @@ interface AudioState {
   setAutoplay: (v: boolean) => void
 }
 
+const mutedAudioDefaults = {
+  masterVolume: 0,
+  sfxVolume: 0,
+  radioVolume: 0,
+  muted: true,
+} satisfies Pick<AudioState, 'masterVolume' | 'sfxVolume' | 'radioVolume' | 'muted'>
+
 const useAudio = create<AudioState>()(
   persist(
     (set) => ({
-      masterVolume: 70,
-      sfxVolume: 50,
-      radioVolume: 25,
+      ...mutedAudioDefaults,
       isRadioPlaying: false,
-      muted: false,
       autoplay: true,
       setMasterVolume: (v) => set({ masterVolume: v }),
       setSfxVolume: (v) => set({ sfxVolume: v }),
@@ -38,6 +42,17 @@ const useAudio = create<AudioState>()(
     }),
     {
       name: 'pascal-audio-settings',
+      version: 2,
+      migrate: (persistedState, version) => {
+        if (version >= 2 || !persistedState || typeof persistedState !== 'object') {
+          return persistedState
+        }
+
+        return {
+          ...persistedState,
+          ...mutedAudioDefaults,
+        }
+      },
     },
   ),
 )

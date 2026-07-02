@@ -2,7 +2,6 @@ import {
   type AnyNode,
   type AnyNodeId,
   type BuildingNode,
-  emitter,
   type GuideNode,
   LevelNode,
   type ScanNode,
@@ -13,7 +12,6 @@ import {
 import { useViewer } from '@pascal-app/viewer'
 import { useTranslation } from 'react-i18next'
 import {
-  Camera,
   ChevronDown,
   Copy,
   Loader2,
@@ -233,88 +231,6 @@ const PropertyLineSection = memo(function PropertyLineSection() {
 // ============================================================================
 // SITE PHASE VIEW - Property line + building buttons
 // ============================================================================
-
-const CameraPopover = memo(function CameraPopover({
-  nodeId,
-  hasCamera,
-  open,
-  onOpenChange,
-  buttonClassName,
-}: {
-  nodeId: AnyNodeId
-  hasCamera: boolean
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  buttonClassName?: string
-}) {
-  const { t } = useTranslation()
-  const updateNode = useScene((state) => state.updateNode)
-  return (
-    <Popover onOpenChange={onOpenChange} open={open}>
-      <PopoverTrigger asChild>
-        <button
-          className={cn(
-            'relative flex h-6 w-6 cursor-pointer items-center justify-center rounded',
-            buttonClassName,
-          )}
-          onClick={(e) => e.stopPropagation()}
-          title={t('Camera snapshot')}
-        >
-          <Camera className="h-3.5 w-3.5" />
-          {hasCamera && (
-            <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-          )}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="w-auto p-1"
-        onClick={(e) => e.stopPropagation()}
-        side="right"
-      >
-        <div className="flex flex-col gap-0.5">
-          {hasCamera && (
-            <button
-              className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-accent"
-              onClick={(e) => {
-                e.stopPropagation()
-                emitter.emit('camera-controls:view', { nodeId })
-                onOpenChange(false)
-              }}
-            >
-              <Camera className="h-3.5 w-3.5" />
-              {t('View snapshot')}
-            </button>
-          )}
-          <button
-            className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-accent"
-            onClick={(e) => {
-              e.stopPropagation()
-              emitter.emit('camera-controls:capture', { nodeId })
-              onOpenChange(false)
-            }}
-          >
-            <Camera className="h-3.5 w-3.5" />
-            {hasCamera ? t('Update snapshot') : t('Take snapshot')}
-          </button>
-          {hasCamera && (
-            <button
-              className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-destructive hover:text-destructive-foreground"
-              onClick={(e) => {
-                e.stopPropagation()
-                updateNode(nodeId, { camera: undefined })
-                onOpenChange(false)
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              {t('Clear snapshot')}
-            </button>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
-})
 
 const ReferenceItem = memo(function ReferenceItem({
   refNode,
@@ -597,7 +513,6 @@ const LevelItem = memo(function LevelItem({
   levels,
   selectedLevelId,
   setSelection,
-  updateNode,
   isLast,
   projectId,
   onUploadAsset,
@@ -607,14 +522,12 @@ const LevelItem = memo(function LevelItem({
   levels: LevelNode[]
   selectedLevelId: string | null
   setSelection: (selection: any) => void
-  updateNode: (id: AnyNodeId, updates: Partial<AnyNode>) => void
   isLast?: boolean
   projectId?: string
   onUploadAsset?: (projectId: string, levelId: string, file: File, type: 'scan' | 'guide') => void
   onDeleteAsset?: (projectId: string, url: string) => void
 }) {
   const { t } = useTranslation()
-  const [cameraPopoverOpen, setCameraPopoverOpen] = useState(false)
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const createNodes = useScene((s) => s.createNodes)
@@ -741,72 +654,6 @@ const LevelItem = memo(function LevelItem({
             onStopEditing={() => setIsEditing(false)}
           />
         </div>
-        {/* Camera snapshot button */}
-        <Popover onOpenChange={setCameraPopoverOpen} open={cameraPopoverOpen}>
-          <PopoverTrigger asChild>
-            <button
-              className={cn(
-                'relative mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md opacity-0 transition-colors group-hover/level:opacity-100',
-                selectedLevelId === level.id
-                  ? 'hover:bg-black/5 dark:hover:bg-white/10'
-                  : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-              )}
-              onClick={(e) => e.stopPropagation()}
-              title={t('Camera snapshot')}
-            >
-              <Camera className="h-3.5 w-3.5" />
-              {level.camera && (
-                <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-              )}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            align="start"
-            className="w-auto p-1"
-            onClick={(e) => e.stopPropagation()}
-            side="right"
-          >
-            <div className="flex flex-col gap-0.5">
-              {level.camera && (
-                <button
-                  className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-accent"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    emitter.emit('camera-controls:view', { nodeId: level.id })
-                    setCameraPopoverOpen(false)
-                  }}
-                >
-                  <Camera className="h-3.5 w-3.5" />
-                  {t('View snapshot')}
-                </button>
-              )}
-              <button
-                className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-accent"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  emitter.emit('camera-controls:capture', { nodeId: level.id })
-                  setCameraPopoverOpen(false)
-                }}
-              >
-                <Camera className="h-3.5 w-3.5" />
-                {level.camera ? t('Update snapshot') : t('Take snapshot')}
-              </button>
-              {level.camera && (
-                <button
-                  className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-destructive hover:text-destructive-foreground"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    updateNode(level.id, { camera: undefined })
-                    setCameraPopoverOpen(false)
-                  }}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {t('Clear snapshot')}
-                </button>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
         <Popover>
           <PopoverTrigger asChild>
             <button
@@ -890,7 +737,6 @@ const LevelsSection = memo(function LevelsSection({
 } = {}) {
   const { t } = useTranslation()
   const createNode = useScene((state) => state.createNode)
-  const updateNode = useScene((state) => state.updateNode)
   const selectedBuildingId = useViewer((state) => state.selection.buildingId)
   const selectedLevelId = useViewer((state) => state.selection.levelId)
   const setSelection = useViewer((state) => state.setSelection)
@@ -959,7 +805,6 @@ const LevelsSection = memo(function LevelsSection({
             projectId={projectId}
             selectedLevelId={selectedLevelId}
             setSelection={setSelection}
-            updateNode={updateNode}
           />
         ))}
       </div>
@@ -1101,7 +946,6 @@ const LayerToggle = memo(function LayerToggle() {
 const ZoneItem = memo(function ZoneItem({ zone, isLast }: { zone: ZoneNode; isLast?: boolean }) {
   const { t } = useTranslation()
   const [isEditing, setIsEditing] = useState(false)
-  const [cameraPopoverOpen, setCameraPopoverOpen] = useState(false)
   const deleteNode = useScene((state) => state.deleteNode)
   const updateNode = useScene((state) => state.updateNode)
   const selectedZoneId = useViewer((state) => state.selection.zoneId)
@@ -1190,67 +1034,6 @@ const ZoneItem = memo(function ZoneItem({ zone, isLast }: { zone: ZoneNode; isLa
         />
       </div>
       <div className="flex items-center gap-0.5">
-        {/* Camera snapshot button */}
-        <Popover onOpenChange={setCameraPopoverOpen} open={cameraPopoverOpen}>
-          <PopoverTrigger asChild>
-            <button
-              className="relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/row:opacity-100 dark:hover:bg-white/10"
-              onClick={(e) => e.stopPropagation()}
-              title={t('Camera snapshot')}
-            >
-              <Camera className="h-3 w-3" />
-              {zone.camera && (
-                <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-              )}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            align="start"
-            className="w-auto p-1"
-            onClick={(e) => e.stopPropagation()}
-            side="right"
-          >
-            <div className="flex flex-col gap-0.5">
-              {zone.camera && (
-                <button
-                  className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-accent"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    emitter.emit('camera-controls:view', { nodeId: zone.id })
-                    setCameraPopoverOpen(false)
-                  }}
-                >
-                  <Camera className="h-3.5 w-3.5" />
-                  {t('View snapshot')}
-                </button>
-              )}
-              <button
-                className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-accent"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  emitter.emit('camera-controls:capture', { nodeId: zone.id })
-                  setCameraPopoverOpen(false)
-                }}
-              >
-                <Camera className="h-3.5 w-3.5" />
-                {zone.camera ? t('Update snapshot') : t('Take snapshot')}
-              </button>
-              {zone.camera && (
-                <button
-                  className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-destructive hover:text-destructive-foreground"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    updateNode(zone.id, { camera: undefined })
-                    setCameraPopoverOpen(false)
-                  }}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {t('Clear snapshot')}
-                </button>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
         <button
           className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/row:opacity-100 dark:hover:bg-white/10"
           onClick={handleDelete}
@@ -1369,16 +1152,12 @@ const ContentSection = memo(function ContentSection() {
 const BuildingItem = memo(function BuildingItem({
   building,
   isBuildingActive,
-  buildingCameraOpen,
-  setBuildingCameraOpen,
   projectId,
   onUploadAsset,
   onDeleteAsset,
 }: {
   building: BuildingNode
   isBuildingActive: boolean
-  buildingCameraOpen: string | null
-  setBuildingCameraOpen: (id: string | null) => void
   projectId?: string
   onUploadAsset?: (projectId: string, levelId: string, file: File, type: 'scan' | 'guide') => void
   onDeleteAsset?: (projectId: string, url: string) => void
@@ -1387,7 +1166,6 @@ const BuildingItem = memo(function BuildingItem({
   const setSelection = useViewer((state) => state.setSelection)
   const phase = useEditor((state) => state.phase)
   const setPhase = useEditor((state) => state.setPhase)
-  const updateNode = useScene((state) => state.updateNode)
   const itemRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -1433,74 +1211,6 @@ const BuildingItem = memo(function BuildingItem({
           />
           <span className="truncate font-medium text-sm">{building.name || t('Building')}</span>
         </div>
-        <Popover
-          onOpenChange={(open) => setBuildingCameraOpen(open ? building.id : null)}
-          open={buildingCameraOpen === building.id}
-        >
-          <PopoverTrigger asChild>
-            <button
-              className={cn(
-                'relative mr-1.5 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md opacity-0 transition-colors group-hover/building:opacity-100',
-                isBuildingActive
-                  ? 'text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10'
-                  : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-              )}
-              onClick={(e) => e.stopPropagation()}
-              title={t('Camera snapshot')}
-            >
-              <Camera className="h-4 w-4" />
-              {building.camera && (
-                <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-              )}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            align="start"
-            className="w-auto p-1"
-            onClick={(e) => e.stopPropagation()}
-            side="right"
-          >
-            <div className="flex flex-col gap-0.5">
-              {building.camera && (
-                <button
-                  className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-accent"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    emitter.emit('camera-controls:view', { nodeId: building.id })
-                    setBuildingCameraOpen(null)
-                  }}
-                >
-                  <Camera className="h-3.5 w-3.5" />
-                  {t('View snapshot')}
-                </button>
-              )}
-              <button
-                className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-accent"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  emitter.emit('camera-controls:capture', { nodeId: building.id })
-                  setBuildingCameraOpen(null)
-                }}
-              >
-                <Camera className="h-3.5 w-3.5" />
-                {building.camera ? t('Update snapshot') : t('Take snapshot')}
-              </button>
-              {building.camera && (
-                <button
-                  className="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-popover-foreground text-sm hover:bg-destructive hover:text-destructive-foreground"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    updateNode(building.id, { camera: undefined })
-                    setBuildingCameraOpen(null)
-                  }}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  {t('Clear snapshot')}
-                </button>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
       </div>
 
       {/* Tools and content for the active building */}
@@ -1543,14 +1253,9 @@ export interface SitePanelProps {
 export function SitePanel({ projectId, onUploadAsset, onDeleteAsset }: SitePanelProps = {}) {
   const { t } = useTranslation()
   const rootNodeIds = useScene((state) => state.rootNodeIds)
-  const updateNode = useScene((state) => state.updateNode)
   const selectedBuildingId = useViewer((state) => state.selection.buildingId)
-  const setSelection = useViewer((state) => state.setSelection)
   const phase = useEditor((state) => state.phase)
   const setPhase = useEditor((state) => state.setPhase)
-
-  const [siteCameraOpen, setSiteCameraOpen] = useState(false)
-  const [buildingCameraOpen, setBuildingCameraOpen] = useState<string | null>(null)
 
   const siteNode = useScene((s) =>
     rootNodeIds[0] ? ((s.nodes[rootNodeIds[0]] as SiteNode | undefined) ?? null) : null,
@@ -1590,16 +1295,6 @@ export function SitePanel({ projectId, onUploadAsset, onDeleteAsset }: SitePanel
               />
               <span className="font-medium text-sm">{siteNode.name || t('Site')}</span>
             </div>
-            <CameraPopover
-              buttonClassName={cn(
-                'transition-colors',
-                phase === 'site' ? 'hover:bg-black/5 dark:hover:bg-white/10' : 'hover:bg-accent',
-              )}
-              hasCamera={!!siteNode.camera}
-              nodeId={siteNode.id as AnyNodeId}
-              onOpenChange={setSiteCameraOpen}
-              open={siteCameraOpen}
-            />
           </motion.div>
         )}
 
@@ -1638,13 +1333,11 @@ export function SitePanel({ projectId, onUploadAsset, onDeleteAsset }: SitePanel
                 return (
                   <BuildingItem
                     building={building}
-                    buildingCameraOpen={buildingCameraOpen}
                     isBuildingActive={isBuildingActive}
                     key={building.id}
                     onDeleteAsset={onDeleteAsset}
                     onUploadAsset={onUploadAsset}
                     projectId={projectId}
-                    setBuildingCameraOpen={setBuildingCameraOpen}
                   />
                 )
               })}

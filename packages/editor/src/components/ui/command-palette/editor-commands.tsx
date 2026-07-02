@@ -297,18 +297,6 @@ export function EditorCommands() {
         keywords: ['rendered', 'shading', 'render', 'mode', 'quality'],
         execute: () => run(() => useViewer.getState().setShading('rendered')),
       },
-      {
-        id: 'editor.viewer.camera-snapshot',
-        label: 'Take Snapshot',
-        group: 'Viewer Controls',
-        icon: <Camera className="h-4 w-4" />,
-        keywords: ['camera', 'snapshot', 'capture', 'save', 'view', 'bookmark'],
-        execute: () => {
-          setOpen(false)
-          useEditor.getState().setCaptureMode(true)
-        },
-      },
-
       // ── View ─────────────────────────────────────────────────────────────
       {
         id: 'editor.view.preview',
