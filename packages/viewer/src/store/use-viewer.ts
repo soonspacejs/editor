@@ -10,6 +10,9 @@ import type { ColorPreset, RenderShading } from '../lib/materials'
 import { SCENE_THEME_IDS } from '../lib/scene-themes'
 
 export type RenderContext = 'editor' | 'viewer'
+export type ExportSceneFormat = 'glb' | 'stl' | 'obj' | 'glb-buffer'
+export type ExportSceneResult = void | ArrayBuffer
+export type ExportSceneFn = (format?: ExportSceneFormat) => Promise<ExportSceneResult>
 
 type SelectionPath = {
   buildingId: BuildingNode['id'] | null
@@ -96,8 +99,8 @@ type ViewerState = {
   outliner: Outliner // No setter as we will manipulate directly the arrays
 
   // Export functionality
-  exportScene: ((format?: 'glb' | 'stl' | 'obj') => Promise<void>) | null
-  setExportScene: (fn: ((format?: 'glb' | 'stl' | 'obj') => Promise<void>) | null) => void
+  exportScene: ExportSceneFn | null
+  setExportScene: (fn: ExportSceneFn | null) => void
 
   debugColors: boolean
   setDebugColors: (enabled: boolean) => void

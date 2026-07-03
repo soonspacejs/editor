@@ -82,7 +82,7 @@ export function SceneNameSaveBar({
 
     const nextName = value.trim()
     if (!nextName) {
-      setValidationError(t('Please enter a scene name'))
+      setValidationError(t('Please enter a structure name'))
       return
     }
 
@@ -115,7 +115,7 @@ export function SceneNameSaveBar({
           if (validationError) setValidationError(null)
           onChange(event.target.value)
         }}
-        placeholder={t('Untitled structure')}
+        placeholder={t('Please enter a structure name')}
         style={inputStyle}
         value={value}
       />

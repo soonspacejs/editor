@@ -1,12 +1,32 @@
 'use client'
 
-import { nodeRegistry, resolveLevelId, sceneRegistry, useScene } from '@pascal-app/core'
+import {
+  nodeRegistry,
+  resolveLevelId,
+  sceneRegistry,
+  useLiveNodeOverrides,
+  useLiveTransforms,
+  useScene,
+} from '@pascal-app/core'
 import { useViewer } from '@pascal-app/viewer'
+import useAlignmentGuides from '../store/use-alignment-guides'
+import useDirectManipulationFeedback from '../store/use-direct-manipulation-feedback'
 import useEditor, {
   hasCustomPersistedEditorUiState,
   normalizePersistedEditorUiState,
   type PersistedEditorUiState,
 } from '../store/use-editor'
+import useFacingPose from '../store/use-facing-pose'
+import { useFloorplanDraftPreview } from '../store/use-floorplan-draft-preview'
+import useFloorplanMarquee from '../store/use-floorplan-marquee'
+import useInteractionScope from '../store/use-interaction-scope'
+import useOpeningGuides from '../store/use-opening-guides'
+import usePlacementPreview from '../store/use-placement-preview'
+import useSegmentDraftChain from '../store/use-segment-draft-chain'
+import { useStairBuildPreview } from '../store/use-stair-build-preview'
+import { useWallMoveGhosts } from '../store/use-wall-move-ghosts'
+import useWallSnapIndicator from '../store/use-wall-snap-indicator'
+import { clearPlacementSurface } from './active-placement-surface'
 
 export type SceneGraph = {
   nodes: Record<string, unknown>
@@ -14,6 +34,7 @@ export type SceneGraph = {
   // Document-level scene state that travels with the graph. Optional so older
   // payloads (and callers that only build nodes) stay valid.
   collections?: Record<string, unknown>
+  editorUi?: Record<string, unknown>
   materials?: Record<string, unknown>
 }
 
@@ -344,6 +365,7 @@ export function syncEditorSelectionFromCurrentScene() {
 }
 
 function resetEditorInteractionState() {
+  resetEditorTransientState()
   useViewer.getState().setHoveredId(null)
   useViewer.getState().resetSelection()
   // Clear outliner arrays synchronously so stale Object3D refs from the old
@@ -356,13 +378,68 @@ function resetEditorInteractionState() {
     phase: 'site',
     mode: 'select',
     tool: null,
+    toolDefaults: {},
     structureLayer: 'elements',
     catalogCategory: null,
+    placementDragMode: false,
+    movingNodeOrigin: null,
+    rotationAxis: 'y',
+    selectedMaterialTarget: null,
+    activePaintMaterial: null,
+    activePaintTarget: 'wall',
+    draftVertexCount: 0,
+    paintScope: 'single',
+    paintEraser: false,
+    paintHover: null,
     selectedItem: null,
     selectedReferenceId: null,
+    guideUi: {},
     spaces: {},
     hoveredHole: null,
     isPreviewMode: false,
+    captureMode: { mode: 'idle' },
+    isCaptureMode: false,
+    viewMode: '2d',
+    isFloorplanOpen: true,
+    floorplanSelectionTool: 'click',
+    isFirstPersonMode: false,
+    _viewModeBeforeFirstPerson: null,
+    workspaceMode: 'edit',
+    _viewModeBeforeStudio: null,
+    activeSidebarPanel: 'site',
+    mobilePanelSheetHeight: 0,
+  })
+}
+
+function resetEditorTransientState() {
+  useLiveNodeOverrides.getState().clearAll()
+  useLiveTransforms.getState().clearAll()
+  useInteractionScope.getState().end()
+  useFloorplanDraftPreview.getState().reset()
+  useFloorplanMarquee.getState().reset()
+  usePlacementPreview.getState().clear()
+  useStairBuildPreview.getState().reset()
+  useWallMoveGhosts.getState().clear()
+  useOpeningGuides.getState().clear()
+  useFacingPose.getState().clear()
+  useAlignmentGuides.getState().clear()
+  useWallSnapIndicator.getState().clear()
+  useDirectManipulationFeedback.getState().clearActiveRotateNodeId()
+  useSegmentDraftChain.getState().clear('wall')
+  useSegmentDraftChain.getState().clear('fence')
+  clearPlacementSurface()
+  useEditor.setState({
+    navigationSyncPose: null,
+    isFloorplanHovered: false,
+    isRiserOpen: false,
+  })
+  useViewer.setState({
+    cameraDragging: false,
+    hoverHighlightMode: 'default',
+    hoveredId: null,
+    inputDragging: false,
+    previewSelectedIds: [],
+    walkthroughMode: false,
   })
 }
 
@@ -374,14 +451,78 @@ function hasUsableSceneGraph(sceneGraph?: SceneGraph | null): sceneGraph is Scen
   )
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+function getCurrentEditorUiState(): Record<string, unknown> {
+  const state = useEditor.getState()
+
+  return {
+    activeSidebarPanel: state.activeSidebarPanel,
+    catalogCategory: state.catalogCategory,
+    continuationByContext: state.continuationByContext,
+    floorplanPaneRatio: state.floorplanPaneRatio,
+    floorplanSelectionTool: state.floorplanSelectionTool,
+    gridSnapStep: state.gridSnapStep,
+    isFloorplanOpen: state.isFloorplanOpen,
+    magneticSnap: state.magneticSnap,
+    mode: state.mode,
+    phase: state.phase,
+    referenceFloorOffset: state.referenceFloorOffset,
+    referenceFloorOpacity: state.referenceFloorOpacity,
+    showReferenceFloor: state.showReferenceFloor,
+    snappingModeByContext: state.snappingModeByContext,
+    splitOrientation: state.splitOrientation,
+    structureLayer: state.structureLayer,
+    tool: state.tool,
+    viewMode: state.viewMode,
+  }
+}
+
+function applySceneGraphEditorUiState(editorUi: unknown) {
+  if (!isRecord(editorUi)) return
+
+  const nextState: Record<string, unknown> = {
+    ...normalizePersistedEditorUiState(editorUi as Partial<PersistedEditorUiState>),
+  }
+
+  if (typeof editorUi.activeSidebarPanel === 'string' && editorUi.activeSidebarPanel.trim()) {
+    nextState.activeSidebarPanel = editorUi.activeSidebarPanel
+  }
+
+  if (
+    typeof editorUi.floorplanPaneRatio === 'number' &&
+    Number.isFinite(editorUi.floorplanPaneRatio)
+  ) {
+    nextState.floorplanPaneRatio = Math.min(0.85, Math.max(0.15, editorUi.floorplanPaneRatio))
+  }
+
+  if (editorUi.splitOrientation === 'horizontal' || editorUi.splitOrientation === 'vertical') {
+    nextState.splitOrientation = editorUi.splitOrientation
+  }
+
+  if (
+    editorUi.floorplanSelectionTool === 'click' ||
+    editorUi.floorplanSelectionTool === 'marquee'
+  ) {
+    nextState.floorplanSelectionTool = editorUi.floorplanSelectionTool
+  }
+
+  useEditor.setState(nextState as Parameters<typeof useEditor.setState>[0])
+}
+
 export function applySceneGraphToEditor(sceneGraph?: SceneGraph | null) {
   if (hasUsableSceneGraph(sceneGraph)) {
-    const { nodes, rootNodeIds, collections, materials } = sceneGraph
+    resetEditorTransientState()
+    const { nodes, rootNodeIds, collections, editorUi, materials } = sceneGraph
+    applySceneGraphEditorUiState(editorUi)
     useScene.getState().setScene(nodes as any, rootNodeIds as any, {
       collections: collections as any,
       materials: materials as any,
     })
   } else {
+    resetEditorInteractionState()
     useScene.getState().clearScene()
   }
 
@@ -393,6 +534,7 @@ export function getCurrentSceneGraph(): SceneGraph {
 
   return {
     collections,
+    editorUi: getCurrentEditorUiState(),
     materials,
     nodes,
     rootNodeIds,

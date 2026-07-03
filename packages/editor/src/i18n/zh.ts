@@ -41,6 +41,7 @@ export const zh: Record<string, string> = {
   "Save failed": "保存失败",
   "Unsaved changes": "未保存",
   "Please enter a scene name": "请输入场景名称",
+  "Please enter a structure name": "请输入结构名称",
   "You have unsaved changes. Exit without saving?": "当前结构有未保存的修改，确定不保存并退出吗？",
   "- Remove": "- 移除",
   "-45°": "-45°",

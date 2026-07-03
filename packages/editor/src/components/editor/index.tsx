@@ -17,7 +17,15 @@ import {
   useViewer,
   Viewer,
 } from '@pascal-app/viewer'
-import { memo, type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  memo,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { ViewerOverlay } from '../../components/viewer-overlay'
 import { ViewerZoneSystem } from '../../components/viewer-zone-system'
@@ -33,7 +41,7 @@ import {
   writePersistedSelection,
 } from '../../lib/scene'
 import { initSFXBus } from '../../lib/sfx-bus'
-import useEditor from '../../store/use-editor'
+import useEditor, { type ViewMode } from '../../store/use-editor'
 import { CeilingSelectionAffordanceSystem } from '../systems/ceiling/ceiling-selection-affordance-system'
 import { CeilingSystem } from '../systems/ceiling/ceiling-system'
 import { RoofEditSystem } from '../systems/roof/roof-edit-system'
@@ -96,6 +104,15 @@ export interface EditorCloseSlotContext {
 }
 
 type SidebarHeaderSlot = ReactNode | ((context: EditorCloseSlotContext) => ReactNode)
+type ManualSaveOptions = {
+  name: string
+  exportGlb: () => Promise<ArrayBuffer>
+}
+type InitialEditorUiOptions = {
+  initialSidebarPanel?: string
+  initialViewMode?: ViewMode
+  resetUiOnLoad?: boolean
+}
 
 const EDITOR_HOVER_STYLES: HoverStyles = {
   default: { visibleColor: 0x00_aa_ff, hiddenColor: 0xf3_ff_47, strength: 5, pulse: true },
@@ -133,6 +150,46 @@ function initializeEditorRuntime(): () => void {
     outliner.hoveredObjects.length = 0
   }
 }
+
+function applyInitialEditorUiState({
+  initialSidebarPanel,
+  initialViewMode,
+  resetUiOnLoad,
+}: InitialEditorUiOptions) {
+  const nextEditorState: Partial<ReturnType<typeof useEditor.getState>> = {}
+
+  if (resetUiOnLoad) {
+    Object.assign(nextEditorState, {
+      phase: 'site',
+      mode: 'select',
+      tool: null,
+      structureLayer: 'elements',
+      catalogCategory: null,
+      isPreviewMode: false,
+      captureMode: { mode: 'idle' },
+      isCaptureMode: false,
+      isFirstPersonMode: false,
+      _viewModeBeforeFirstPerson: null,
+      workspaceMode: 'edit',
+      _viewModeBeforeStudio: null,
+      mobilePanelSheetHeight: 0,
+    })
+  }
+
+  if (initialViewMode) {
+    nextEditorState.viewMode = initialViewMode
+    nextEditorState.isFloorplanOpen = initialViewMode !== '3d'
+  }
+
+  if (initialSidebarPanel) {
+    nextEditorState.activeSidebarPanel = initialSidebarPanel
+  }
+
+  if (Object.keys(nextEditorState).length > 0) {
+    useEditor.setState(nextEditorState)
+  }
+}
+
 export interface EditorProps {
   // Layout version — 'v1' (default) or 'v2' (navbar + two-column)
   layoutVersion?: 'v1' | 'v2'
@@ -160,11 +217,14 @@ export interface EditorProps {
   // Persistence — defaults to localStorage when omitted
   onLoad?: () => Promise<SceneGraph | null>
   onSave?: (scene: SceneGraph, options?: { keepalive?: boolean }) => Promise<void>
-  onManualSave?: (scene: SceneGraph, options: { name: string }) => Promise<void> | void
+  onManualSave?: (scene: SceneGraph, options: ManualSaveOptions) => Promise<void> | void
   onDirty?: () => void
   onSaveStatusChange?: (status: SaveStatus) => void
   enableAutoSave?: boolean
   initialSaveStatus?: SaveStatus
+  initialViewMode?: ViewMode
+  initialSidebarPanel?: string
+  resetUiOnLoad?: boolean
   showSceneNameSaveBar?: boolean
   initialSceneName?: string | null
   sceneNameSaveError?: string | null
@@ -1109,6 +1169,9 @@ export default function Editor({
   onSaveStatusChange,
   enableAutoSave = true,
   initialSaveStatus,
+  initialViewMode,
+  initialSidebarPanel,
+  resetUiOnLoad = false,
   showSceneNameSaveBar = false,
   initialSceneName,
   sceneNameSaveError,
@@ -1179,6 +1242,26 @@ export default function Editor({
   const sidebarWidth = useSidebarStore((s) => s.width)
   const isSidebarCollapsed = useSidebarStore((s) => s.isCollapsed)
 
+  useLayoutEffect(() => {
+    applyInitialEditorUiState({
+      initialSidebarPanel,
+      initialViewMode,
+      resetUiOnLoad,
+    })
+  }, [initialSidebarPanel, initialViewMode, resetUiOnLoad])
+
+  useEffect(() => {
+    if (useEditor.persist.hasHydrated()) return
+
+    return useEditor.persist.onFinishHydration(() => {
+      applyInitialEditorUiState({
+        initialSidebarPanel,
+        initialViewMode,
+        resetUiOnLoad,
+      })
+    })
+  }, [initialSidebarPanel, initialViewMode, resetUiOnLoad])
+
   useEffect(() => {
     const teardown = initializeEditorRuntime()
     return teardown
@@ -1208,12 +1291,22 @@ export default function Editor({
         const sceneGraph = onLoad ? await onLoad() : loadSceneFromLocalStorage()
         if (!cancelled) {
           applySceneGraphToEditor(sceneGraph)
+          applyInitialEditorUiState({
+            initialSidebarPanel,
+            initialViewMode,
+            resetUiOnLoad,
+          })
           setIsViewerSceneReady(false)
           setSceneReadyKey((key) => key + 1)
         }
       } catch {
         if (!cancelled) {
           applySceneGraphToEditor(null)
+          applyInitialEditorUiState({
+            initialSidebarPanel,
+            initialViewMode,
+            resetUiOnLoad,
+          })
           setIsViewerSceneReady(false)
           setSceneReadyKey((key) => key + 1)
         }
@@ -1233,7 +1326,7 @@ export default function Editor({
     return () => {
       cancelled = true
     }
-  }, [onLoad, isLoadingSceneRef])
+  }, [onLoad, isLoadingSceneRef, initialViewMode, initialSidebarPanel, resetUiOnLoad])
 
   // Apply preview scene when version preview mode changes
   useEffect(() => {
@@ -1275,7 +1368,21 @@ export default function Editor({
       try {
         const sceneGraph = getCurrentSceneGraph()
         if (onManualSave) {
-          await onManualSave(sceneGraph, { name: nextName })
+          const exportGlb = async () => {
+            const exportScene = useViewer.getState().exportScene
+            if (!exportScene) {
+              throw new Error(t('Save failed'))
+            }
+
+            const buffer = await exportScene('glb-buffer')
+            if (!(buffer instanceof ArrayBuffer)) {
+              throw new Error(t('Save failed'))
+            }
+
+            return buffer
+          }
+
+          await onManualSave(sceneGraph, { name: nextName, exportGlb })
         } else if (onSave) {
           await onSave(sceneGraph)
         } else {

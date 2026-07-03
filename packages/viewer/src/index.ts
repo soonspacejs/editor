@@ -102,7 +102,12 @@ export {
   type SceneTheme,
 } from './lib/scene-themes'
 export { useItemLightPool } from './store/use-item-light-pool'
-export { default as useViewer } from './store/use-viewer'
+export {
+  type ExportSceneFn,
+  type ExportSceneFormat,
+  type ExportSceneResult,
+  default as useViewer,
+} from './store/use-viewer'
 export { CeilingSystem } from './systems/ceiling/ceiling-system'
 export {
   createColumnBoxGeometry,

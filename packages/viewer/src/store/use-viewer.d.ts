@@ -11,6 +11,9 @@ type Outliner = {
   selectedObjects: Object3D[]
   hoveredObjects: Object3D[]
 }
+export type ExportSceneFormat = 'glb' | 'stl' | 'obj' | 'glb-buffer'
+export type ExportSceneResult = void | ArrayBuffer
+export type ExportSceneFn = (format?: ExportSceneFormat) => Promise<ExportSceneResult>
 type ViewerState = {
   selection: SelectionPath
   previewSelectedIds: BaseNode['id'][]
@@ -32,8 +35,8 @@ type ViewerState = {
   setSelection: (updates: Partial<SelectionPath>) => void
   resetSelection: () => void
   outliner: Outliner
-  exportScene: ((format?: 'glb' | 'stl' | 'obj') => Promise<void>) | null
-  setExportScene: (fn: ((format?: 'glb' | 'stl' | 'obj') => Promise<void>) | null) => void
+  exportScene: ExportSceneFn | null
+  setExportScene: (fn: ExportSceneFn | null) => void
 }
 declare const useViewer: import('zustand').UseBoundStore<import('zustand').StoreApi<ViewerState>>
 export default useViewer

@@ -1,7 +1,7 @@
 'use client'
 
 import { emitter, useScene } from '@pascal-app/core'
-import { useViewer } from '@pascal-app/viewer'
+import { type ExportSceneFormat, useViewer } from '@pascal-app/viewer'
 import { useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
 import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js'
@@ -13,7 +13,7 @@ export function ExportManager() {
   const setExportScene = useViewer((state) => state.setExportScene)
 
   useEffect(() => {
-    const exportFn = async (format: 'glb' | 'stl' | 'obj' = 'glb') => {
+    const exportFn = async (format: ExportSceneFormat = 'glb') => {
       // Find the scene renderer group by name
       const sceneGroup = scene.getObjectByName('scene-renderer')
       if (!sceneGroup) {
@@ -23,8 +23,10 @@ export function ExportManager() {
 
       const date = new Date().toISOString().split('T')[0]
 
-      if (format === 'glb') {
+      if (format === 'glb' || format === 'glb-buffer') {
         const buffer = await exportSceneToGlb(sceneGroup, useScene.getState().nodes)
+        if (format === 'glb-buffer') return buffer
+
         const blob = new Blob([buffer], { type: 'model/gltf-binary' })
         downloadBlob(blob, `model_${date}.glb`)
         return
