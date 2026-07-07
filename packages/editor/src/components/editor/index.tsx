@@ -220,6 +220,8 @@ export interface EditorProps {
   onManualSave?: (scene: SceneGraph, options: ManualSaveOptions) => Promise<void> | void
   onDirty?: () => void
   onSaveStatusChange?: (status: SaveStatus) => void
+  /** Called after the initial scene has loaded and the viewer has presented content. */
+  onReady?: () => void
   enableAutoSave?: boolean
   initialSaveStatus?: SaveStatus
   initialViewMode?: ViewMode
@@ -1167,6 +1169,7 @@ export default function Editor({
   onManualSave,
   onDirty,
   onSaveStatusChange,
+  onReady,
   enableAutoSave = true,
   initialSaveStatus,
   initialViewMode,
@@ -1446,6 +1449,19 @@ export default function Editor({
   }, [hasLoadedInitialScene, isLoading, isSceneLoading, isViewerSceneReady, sceneReadyKey])
 
   const showLoader = isLoading || isSceneLoading || !hasLoadedInitialScene || !isViewerSceneReady
+  const hasNotifiedReadyRef = useRef(false)
+
+  useEffect(() => {
+    if (showLoader) {
+      hasNotifiedReadyRef.current = false
+      return
+    }
+
+    if (hasNotifiedReadyRef.current) return
+
+    hasNotifiedReadyRef.current = true
+    onReady?.()
+  }, [onReady, showLoader])
 
   const firstPersonPreviousLevelRef = useRef(useViewer.getState().selection.levelId)
   const wasFirstPersonModeRef = useRef(isFirstPersonMode)
